@@ -14,5 +14,15 @@
     "token-management",
     "file-splitting"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "analyze",
+      "source": "./skills/analyze"
+    },
+    {
+      "name": "split",
+      "source": "./skills/split"
+    }
+  ]
 }
