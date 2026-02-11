@@ -30,6 +30,7 @@ class AnalysisRequest:
 class RefactorPlan:
     """LLM's plan for refactoring the file."""
 
+    folder_name: str  # Semantic name for the folder (e.g., "cooking", "project-phases")
     main_content: str
     reference_sections: list[dict[str, str]]  # [{name: str, content: str}]
     summary: str
@@ -83,21 +84,28 @@ def generate_refactor_prompt(request: AnalysisRequest) -> str:
 {request.content}
 ```
 
-**Task**: Analyze this content and refactor it into:
+**Task**: Analyze this content and refactor it into a semantic folder structure:
 
-1. **Main file** (~{request.target_main_lines} lines):
+1. **Determine semantic folder name** (based on content theme):
+   - Analyze the overarching theme of the content
+   - Choose a name that reflects the CONTENT, not the old filename
+   - Use lowercase-with-hyphens (kebab-case)
+   - Examples: "cooking" (not "recipes"), "project-phases" (not "IMPLEMENTATION_PLAN")
+
+2. **Main file** (~{request.target_main_lines} lines) - Will be saved as `main.md`:
    - Essential overview/introduction
    - Key high-level concepts
    - Clear navigation to detailed sections
    - Scannable structure
 
-2. **Reference files** (1-3 topically organized):
+3. **Supporting files** (1-3 topically organized) - Will be saved alongside main.md:
    - Group related content together
    - Self-contained sections
-   - Descriptive names (e.g., "phase-1-tasks", "testing-guide")
+   - Descriptive names (e.g., "italian-pasta", "french-desserts", "phase-1-tasks")
    - Link back to main file
 
 **Best Practices**:
+- Folder name must be semantic and theme-based
 - Maintain semantic coherence (don't break mid-section)
 - Preserve ALL information (no content loss)
 - Create clear navigation (bidirectional links)
@@ -107,15 +115,16 @@ def generate_refactor_prompt(request: AnalysisRequest) -> str:
 **Output Format** (JSON):
 ```json
 {{
-  "main_content": "the refactored main file content with navigation",
+  "folder_name": "semantic-theme-name",
+  "main_content": "the refactored main.md content with overview and navigation",
   "reference_sections": [
     {{
       "name": "descriptive-kebab-case-name",
-      "content": "full content for this reference file"
+      "content": "full content for this supporting file"
     }}
   ],
   "summary": "brief description of organizational strategy",
-  "reasoning": "explanation of why content was grouped this way"
+  "reasoning": "explanation of why content was grouped this way and folder naming choice"
 }}
 ```
 
@@ -148,6 +157,7 @@ def parse_llm_response(response: str) -> RefactorPlan:
         data = json.loads(json_str)
 
         return RefactorPlan(
+            folder_name=data["folder_name"],
             main_content=data["main_content"],
             reference_sections=data["reference_sections"],
             summary=data["summary"],
@@ -224,7 +234,7 @@ def implement_refactor_plan(
 
     Args:
         file_path: Original file path
-        plan: RefactorPlan from LLM
+        plan: RefactorPlan from LLM with semantic folder name
         backup: Whether to create backup
 
     Returns:
@@ -240,21 +250,25 @@ def implement_refactor_plan(
     if backup:
         backup_path = create_backup(file_path)
 
-    # Create references directory
-    references_dir = file_path.parent / "references" / file_path.stem
-    references_dir.mkdir(parents=True, exist_ok=True)
+    # Create semantic folder at same level as original file
+    semantic_dir = file_path.parent / plan.folder_name
+    semantic_dir.mkdir(parents=True, exist_ok=True)
 
-    # Write main file
-    with open(file_path, "w", encoding="utf-8") as f:
+    # Write main.md in the semantic folder
+    main_file = semantic_dir / "main.md"
+    with open(main_file, "w", encoding="utf-8") as f:
         f.write(plan.main_content)
 
-    # Write reference files
+    # Write supporting files in the same folder
     reference_files = []
     for ref in plan.reference_sections:
-        ref_file = references_dir / f"{ref['name']}.md"
+        ref_file = semantic_dir / f"{ref['name']}.md"
         with open(ref_file, "w", encoding="utf-8") as f:
             f.write(ref["content"])
         reference_files.append(ref_file)
+
+    # Remove original file (it's already backed up)
+    file_path.unlink()
 
     # Calculate line counts
     main_lines = len(plan.main_content.split("\n"))
@@ -262,7 +276,7 @@ def implement_refactor_plan(
 
     result = SplitResult(
         original_file=file_path,
-        main_file=file_path,
+        main_file=main_file,
         reference_files=reference_files,
         backup_file=backup_path,
         lines_in_main=main_lines,

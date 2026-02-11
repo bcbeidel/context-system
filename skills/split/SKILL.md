@@ -19,12 +19,13 @@ Intelligently split large context files (>500 lines) into a scannable main file 
 This command uses the current Claude Code session to:
 
 1. **Analyze** the file content semantically
-2. **Identify** essential vs detailed information
-3. **Organize** content into topics
-4. **Create** a main file (~150 lines) with overview and navigation
-5. **Generate** reference files in `references/[filename]/` directory
-6. **Maintain** all information with clear bidirectional links
-7. **Backup** the original file to `.dewey/backups/`
+2. **Identify** the overarching theme and determine semantic folder name
+3. **Organize** content into topically focused files
+4. **Create** a folder at the same hierarchy level with semantic name
+5. **Generate** `main.md` with overview and navigation
+6. **Create** supporting files with semantic names for each topic
+7. **Maintain** all information with clear bidirectional links
+8. **Backup** the original file to `.dewey/backups/` and remove it
 
 ## Arguments
 
@@ -39,28 +40,56 @@ The command accepts a file path and optional flags:
 
 ## What You Get
 
-### Before
+### Example 1: Recipe Collection
+
+**Before:**
 ```
-File: IMPLEMENTATION_PLAN.md
-Lines: 973
-Structure: Single monolithic file
+/context/recipes.md (850 lines covering Italian, French, and Asian recipes)
 ```
 
-### After
+**After:**
 ```
-Main: IMPLEMENTATION_PLAN.md (~200 lines)
-  - Project overview
-  - Key principles
-  - Phase 0 summary
-  - Clear navigation to phases
+/context/cooking/
+  ├── main.md (~150 lines)
+  │   - Overview of recipe collection
+  │   - Navigation to specific cuisines
+  │   - Cooking tips and guidelines
+  ├── italian-pasta.md
+  ├── french-desserts.md
+  └── asian-stir-fry.md
 
-References (3 files):
-  - references/IMPLEMENTATION_PLAN/phase-1-measurement.md
-  - references/IMPLEMENTATION_PLAN/phase-2-3-optimization.md
-  - references/IMPLEMENTATION_PLAN/testing-completion.md
+Backup: .dewey/backups/recipes_20260210.md
+Original: recipes.md (removed after successful split)
+```
+
+### Example 2: Implementation Plan
+
+**Before:**
+```
+/context/IMPLEMENTATION_PLAN.md (973 lines covering multiple project phases)
+```
+
+**After:**
+```
+/context/project-phases/
+  ├── main.md (~200 lines)
+  │   - Project overview
+  │   - Key principles
+  │   - Phase navigation
+  ├── phase-1-measurement.md
+  ├── phase-2-3-optimization.md
+  └── testing-completion.md
 
 Backup: .dewey/backups/IMPLEMENTATION_PLAN_20260210.md
+Original: IMPLEMENTATION_PLAN.md (removed after successful split)
 ```
+
+**Key points:**
+- Folder name reflects content theme (not old filename)
+- Main file is always `main.md`
+- Supporting files have semantic names
+- Everything stays at same hierarchy level
+- Original file backed up then removed
 
 ## Implementation
 
@@ -106,7 +135,8 @@ When invoked, I (Claude) will analyze the file content and provide a refactoring
 
 ```json
 {
-  "main_content": "Refactored main file with overview and navigation",
+  "folder_name": "semantic-theme-name",
+  "main_content": "Refactored main.md with overview and navigation",
   "reference_sections": [
     {
       "name": "descriptive-kebab-case-name",
@@ -114,9 +144,16 @@ When invoked, I (Claude) will analyze the file content and provide a refactoring
     }
   ],
   "summary": "Brief description of organizational strategy",
-  "reasoning": "Explanation of why content was grouped this way"
+  "reasoning": "Explanation of why content was grouped this way and folder naming choice"
 }
 ```
+
+**Important:**
+- `folder_name`: Must be semantic (based on content theme), not the old filename
+- Example: "cooking" not "recipes", "project-phases" not "IMPLEMENTATION_PLAN"
+- Use lowercase with hyphens (kebab-case)
+- Main content will be saved as `main.md` in the folder
+- Reference sections are supporting files in the same folder
 
 After providing the plan, I will use `implement_refactor_plan()` to write the files unless `--dry-run` is specified.
 
