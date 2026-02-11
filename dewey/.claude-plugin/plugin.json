@@ -1,7 +1,7 @@
 {
   "name": "dewey",
   "description": "Context optimization plugin for Claude Code - intelligently manage, analyze, and optimize your context files (uses only Python built-in libraries)",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": {
     "name": "Dewey Contributors"
   },
@@ -14,15 +14,5 @@
     "token-management",
     "file-splitting"
   ],
-  "license": "MIT",
-  "skills": [
-    {
-      "name": "analyze",
-      "source": "./skills/analyze"
-    },
-    {
-      "name": "split",
-      "source": "./skills/split"
-    }
-  ]
+  "license": "MIT"
 }
