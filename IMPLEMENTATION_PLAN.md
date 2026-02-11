@@ -60,17 +60,17 @@ source venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-### Task 0.3: Token Inventory Script
+### Task 0.3: Token Inventory Script ✅ COMPLETE
 **Spec**: spec-0-quick-start.md, spec-1-measurement.md
 **Dependencies**: Task 0.2
 **Estimate**: M (Medium)
 
 **Acceptance Criteria**:
-- [ ] Script counts all files in context directory
-- [ ] Estimates tokens (4 chars ≈ 1 token)
-- [ ] Outputs CSV: file, lines, bytes, tokens
-- [ ] Can run in <10 seconds on 200 files
-- [ ] Saves to `~/.claude/analytics/context-inventory.csv`
+- [x] Script counts all files in context directory
+- [x] Estimates tokens (4 chars ≈ 1 token)
+- [x] Outputs CSV: file, lines, bytes, tokens
+- [x] Can run in <10 seconds on 200 files
+- [x] Saves to `~/.claude/analytics/context-inventory.csv`
 
 **Implementation**:
 ```python
