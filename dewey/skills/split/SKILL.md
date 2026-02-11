@@ -1,6 +1,6 @@
 ---
 description: Intelligently split large files using LLM analysis to maintain semantic coherence
-allowed-tools: Bash(python *)
+allowed-tools: Read, Write, Bash(cat *, wc *, mkdir *, cp *)
 ---
 
 # Split Large Files
@@ -62,63 +62,77 @@ References (3 files):
 Backup: .dewey/backups/IMPLEMENTATION_PLAN_20260210.md
 ```
 
-## Implementation
+## Implementation Steps
 
-Use the Python helper functions to implement this command:
+### Step 1: Read the File
 
-```python
-import sys
-from pathlib import Path
+First, read the file that needs to be split:
 
-# Add scripts directory to path
-scripts_dir = Path("${CLAUDE_PLUGIN_ROOT}/skills/split/scripts")
-sys.path.insert(0, str(scripts_dir))
-
-from skill_splitter import skill_based_split, implement_refactor_plan
-
-# Parse arguments
-args = "$ARGUMENTS".split()
-file_path = Path(args[0]) if args else None
-dry_run = "--dry-run" in "$ARGUMENTS"
-
-if not file_path:
-    print("Error: Please provide a file path")
-    sys.exit(1)
-
-# Generate analysis prompt
-request, prompt = skill_based_split(
-    file_path,
-    max_lines=500,
-    target_main_lines=150,
-    dry_run=dry_run
-)
-
-# Display file info
-print(f"File: {request.file_path}")
-print(f"Current lines: {request.total_lines}")
-print(f"Target main lines: {request.target_main_lines}")
-print(f"\n{prompt}")
+```bash
+# Read the file content
+cat "$ARGUMENTS"
 ```
 
-## Analysis Task
+Display basic stats about the file (line count, size, etc.)
 
-When invoked, I (Claude) will analyze the file content and provide a refactoring plan in JSON format:
+### Step 2: Semantic Analysis (You Do This!)
+
+**As Claude, analyze the file content semantically:**
+
+1. **Identify the main topics/sections** - What are the major themes?
+2. **Determine what's essential** - What must stay in the main file for quick scanning?
+3. **Group related content** - What details belong together in reference files?
+4. **Plan the structure** - How should the content be organized?
+
+**Think about:**
+- Semantic boundaries (not arbitrary line numbers)
+- Logical groupings that make sense together
+- Anthropic's context organization best practices
+- Keeping the main file scannable (~150 lines)
+- Creating topical reference files
+
+### Step 3: Create the Refactoring Plan
+
+Based on your semantic analysis, create a detailed plan:
 
 ```json
 {
-  "main_content": "Refactored main file with overview and navigation",
-  "reference_sections": [
+  "main_file": {
+    "content": "# Overview\n\nBrief summary...\n\n## Navigation\n- [Topic 1](references/filename/topic-1.md)...",
+    "description": "Scannable overview with navigation"
+  },
+  "reference_files": [
     {
-      "name": "descriptive-kebab-case-name",
-      "content": "Full content for this reference file"
+      "path": "references/filename/topic-1.md",
+      "content": "# Topic 1\n\nDetailed content...",
+      "description": "What this covers"
     }
   ],
-  "summary": "Brief description of organizational strategy",
-  "reasoning": "Explanation of why content was grouped this way"
+  "reasoning": "Why you organized it this way"
 }
 ```
 
-After providing the plan, I will use `implement_refactor_plan()` to write the files unless `--dry-run` is specified.
+### Step 4: Preview and Confirm
+
+Show the user:
+- Main file structure (~how many lines)
+- List of reference files that will be created
+- What content goes where
+- Backup location
+
+Ask for confirmation before proceeding (unless `--dry-run`).
+
+### Step 5: Implement the Split
+
+**Only after user confirmation**, write the files:
+
+1. **Backup original**: Copy to `.dewey/backups/[filename]_[timestamp].md`
+2. **Write main file**: Replace original with scannable version
+3. **Create references directory**: `references/[filename]/`
+4. **Write reference files**: One per topic
+5. **Verify**: Check all content preserved
+
+Use the Write tool to create each file based on your analysis.
 
 ## Best Practices Applied
 
