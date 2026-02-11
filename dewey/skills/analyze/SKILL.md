@@ -26,7 +26,7 @@ Perform comprehensive analysis of context files to identify optimization opportu
 
 ## Arguments
 
-- Directory path (default: current directory)
+- Directory path (default: `context` directory)
 - `--detailed` - Include file-by-file breakdown
 - `--baseline` - Save analysis as baseline for future comparison
 - `--threshold N` - Custom "large file" threshold (default: 500 lines)
@@ -37,10 +37,10 @@ Perform comprehensive analysis of context files to identify optimization opportu
 
 ### 1. Run Analysis Script
 
-Execute the Python analysis script:
+Execute the Python analysis script with default to `context` directory:
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/skills/analyze/scripts/analyze_directory.py $ARGUMENTS
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/analyze/scripts/analyze_directory.py ${ARGUMENTS:-context}
 ```
 
 The script will:
