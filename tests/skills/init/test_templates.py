@@ -177,15 +177,63 @@ class TestRenderOverviewMd(unittest.TestCase):
             },
         ]
 
+    def test_contains_yaml_frontmatter(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        self.assertTrue(result.startswith("---\n"))
+        self.assertIn("---", result[3:])
+
+    def test_frontmatter_has_depth_overview(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        self.assertIn("depth: overview", result)
+
+    def test_frontmatter_has_sources(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        self.assertIn("sources:", result)
+
+    def test_frontmatter_has_last_validated(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        self.assertIn("last_validated: 2026-01-15", result)
+
+    def test_frontmatter_has_relevance(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        self.assertIn("relevance:", result)
+        self.assertIn("core", result)
+
     def test_contains_area_heading(self, mock_date):
         mock_date.today.return_value = FIXED_DATE
         result = render_overview_md("Backend Development", "core", self._topics())
         self.assertIn("# Backend Development", result)
 
-    def test_contains_relevance(self, mock_date):
+    def test_contains_what_this_covers_section(self, mock_date):
         mock_date.today.return_value = FIXED_DATE
         result = render_overview_md("Backend Development", "core", self._topics())
-        self.assertIn("core", result)
+        self.assertIn("## What This Covers", result)
+
+    def test_contains_how_its_organized_section(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        self.assertIn("## How It's Organized", result)
+
+    def test_contains_key_sources_section(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        self.assertIn("## Key Sources", result)
+
+    def test_contains_all_three_required_sections(self, mock_date):
+        mock_date.today.return_value = FIXED_DATE
+        result = render_overview_md("Backend Development", "core", self._topics())
+        for section in [
+            "## What This Covers",
+            "## How It's Organized",
+            "## Key Sources",
+        ]:
+            with self.subTest(section=section):
+                self.assertIn(section, result)
 
     def test_contains_topic_links(self, mock_date):
         mock_date.today.return_value = FIXED_DATE
@@ -203,6 +251,7 @@ class TestRenderOverviewMd(unittest.TestCase):
         mock_date.today.return_value = FIXED_DATE
         result = render_overview_md("Empty Area", "peripheral", [])
         self.assertIn("# Empty Area", result)
+        self.assertIn("depth: overview", result)
 
 
 @patch("skills.init.scripts.templates.date")

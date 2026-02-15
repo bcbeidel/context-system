@@ -129,22 +129,35 @@ def render_overview_md(area_name: str, relevance: str, topics: list[dict]) -> st
     topics:
         List of ``{"name": ..., "filename": ..., "description": ...}``.
     """
-    sections: list[str] = []
+    fm = _frontmatter({
+        "sources": [
+            "url: <!-- Add primary source URL -->\n    title: <!-- Add source title -->",
+        ],
+        "last_validated": _today(),
+        "relevance": f'"{relevance}"',
+        "depth": "overview",
+    })
 
-    sections.append(f"# {area_name}")
-    sections.append("")
-    sections.append(f"**Relevance:** {relevance}")
-    sections.append("")
-    sections.append("## Topics")
-    sections.append("")
+    body_lines: list[str] = []
+
+    body_lines.append(f"# {area_name}")
+    body_lines.append("")
+    body_lines.append("## What This Covers")
+    body_lines.append("<!-- placeholder -->")
+    body_lines.append("")
+    body_lines.append("## How It's Organized")
 
     for topic in topics:
-        sections.append(f"- [{topic['name']}]({topic['filename']}) -- {topic['description']}")
+        body_lines.append(f"- [{topic['name']}]({topic['filename']}) -- {topic['description']}")
 
     if not topics:
-        sections.append("<!-- No topics yet. Use the create-topic skill to add one. -->")
+        body_lines.append("<!-- No topics yet. Use the create-topic skill to add one. -->")
 
-    return "\n".join(sections) + "\n"
+    body_lines.append("")
+    body_lines.append("## Key Sources")
+    body_lines.append("<!-- placeholder -->")
+
+    return fm + "\n\n" + "\n".join(body_lines) + "\n"
 
 
 def render_topic_md(topic_name: str, relevance: str) -> str:
