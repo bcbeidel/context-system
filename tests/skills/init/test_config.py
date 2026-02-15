@@ -45,6 +45,15 @@ class TestReadKnowledgeDir(unittest.TestCase):
         (config_dir / "config.json").write_text(json.dumps({"other": "value"}))
         self.assertEqual(read_knowledge_dir(self.tmpdir), "docs")
 
+    def test_strips_trailing_slash_on_read(self):
+        """Trailing slash in stored value is stripped on read."""
+        config_dir = self.tmpdir / ".dewey"
+        config_dir.mkdir(parents=True)
+        (config_dir / "config.json").write_text(
+            json.dumps({"knowledge_dir": "docs/"})
+        )
+        self.assertEqual(read_knowledge_dir(self.tmpdir), "docs")
+
 
 class TestWriteConfig(unittest.TestCase):
     """Tests for write_config."""
@@ -77,6 +86,12 @@ class TestWriteConfig(unittest.TestCase):
         """write_config output is readable by read_knowledge_dir."""
         write_config(self.tmpdir, "my-docs")
         self.assertEqual(read_knowledge_dir(self.tmpdir), "my-docs")
+
+    def test_strips_trailing_slash_on_write(self):
+        """Trailing slash is stripped before writing to config."""
+        write_config(self.tmpdir, "docs/")
+        data = json.loads((self.tmpdir / ".dewey" / "config.json").read_text())
+        self.assertEqual(data["knowledge_dir"], "docs")
 
 
 if __name__ == "__main__":

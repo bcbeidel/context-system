@@ -9,7 +9,8 @@ def read_knowledge_dir(kb_root: Path) -> str:
     config_path = kb_root / ".dewey" / "config.json"
     if config_path.exists():
         try:
-            return json.loads(config_path.read_text()).get("knowledge_dir", "docs")
+            value = json.loads(config_path.read_text()).get("knowledge_dir", "docs")
+            return value.strip("/") or "docs"
         except (json.JSONDecodeError, OSError):
             return "docs"
     return "docs"
@@ -17,6 +18,7 @@ def read_knowledge_dir(kb_root: Path) -> str:
 
 def write_config(kb_root: Path, knowledge_dir: str = "docs") -> Path:
     """Write Dewey configuration to .dewey/config.json."""
+    knowledge_dir = knowledge_dir.strip("/") or "docs"
     config_path = kb_root / ".dewey" / "config.json"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(json.dumps({"knowledge_dir": knowledge_dir}, indent=2) + "\n")

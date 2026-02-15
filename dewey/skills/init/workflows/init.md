@@ -51,16 +51,16 @@ These should map to how you actually think about the work. Want to adjust anythi
 
 ## Step 4: Ask about knowledge directory location
 
-Ask the user: **"Where would you like to store the knowledge base files? (default: `docs/`)"**
+Ask the user: **"Where would you like to store the knowledge base files? (default: `docs`)"**
 
-If the user doesn't provide a specific answer, use `docs/` as the default.
+If the user doesn't provide a specific answer, use `docs` as the default.
 
 ## Step 5: Scaffold
 
 After the user confirms or adjusts:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <directory> --role "<persona>" --areas "<area1>,<area2>,<area3>" --knowledge-dir "<user's answer or docs/>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <directory> --role "<persona>" --areas "<area1>,<area2>,<area3>" --knowledge-dir "<user's answer or docs>"
 ```
 
 ## Step 6: Report, build the curation plan, and suggest next steps
