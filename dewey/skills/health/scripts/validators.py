@@ -309,3 +309,47 @@ def check_source_urls(file_path: Path) -> list[dict]:
             })
 
     return issues
+
+
+def check_index_sync(kb_root: Path, *, knowledge_dir_name: str = "docs") -> list[dict]:
+    """Check that index.md lists all topic files that exist on disk.
+
+    Warns when:
+    - index.md is missing entirely
+    - A topic file exists on disk but is not referenced in index.md
+    """
+    issues: list[dict] = []
+    knowledge_dir = kb_root / knowledge_dir_name
+    index_path = knowledge_dir / "index.md"
+
+    if not index_path.exists():
+        issues.append({
+            "file": str(index_path),
+            "message": "Missing index.md — run scaffold --rebuild-index to generate",
+            "severity": "warn",
+        })
+        return issues
+
+    index_text = index_path.read_text()
+
+    # Collect all topic .md files on disk (excluding overview, ref, proposals, index)
+    for child in sorted(knowledge_dir.iterdir()):
+        if not child.is_dir():
+            continue
+        if child.name.startswith("_"):
+            continue
+        for md_file in sorted(child.glob("*.md")):
+            if md_file.name == "overview.md":
+                continue
+            if md_file.name.endswith(".ref.md"):
+                continue
+            # Check if this file is referenced in index.md
+            relative_ref = f"{child.name}/{md_file.name}"
+            if relative_ref not in index_text:
+                issues.append({
+                    "file": str(md_file),
+                    "message": f"Topic not in index.md: {relative_ref} — run scaffold --rebuild-index",
+                    "severity": "warn",
+                })
+
+    return issues

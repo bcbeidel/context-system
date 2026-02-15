@@ -32,6 +32,7 @@ from validators import (
     check_cross_references,
     check_freshness,
     check_frontmatter,
+    check_index_sync,
     check_section_ordering,
     check_size_bounds,
     check_source_urls,
@@ -90,6 +91,7 @@ def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
 
     # Structural validators (run once)
     all_issues.extend(check_coverage(kb_root, knowledge_dir_name=knowledge_dir_name))
+    all_issues.extend(check_index_sync(kb_root, knowledge_dir_name=knowledge_dir_name))
 
     # Build summary
     files_with_fails = set()

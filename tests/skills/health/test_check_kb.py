@@ -448,5 +448,52 @@ class TestIndexMdExclusion(unittest.TestCase):
         self.assertNotIn("index.md", filenames)
 
 
+class TestCheckIndexSync(unittest.TestCase):
+    """Tier 1 validator: detect when index.md is out of sync with disk."""
+
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        kb = self.tmpdir / "docs" / "area"
+        kb.mkdir(parents=True)
+        _write(kb / "overview.md", _valid_md("overview"))
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def test_missing_index_md_warns(self):
+        from validators import check_index_sync
+        issues = check_index_sync(self.tmpdir, knowledge_dir_name="docs")
+        self.assertTrue(any("index.md" in i["message"] and i["severity"] == "warn" for i in issues))
+
+    def test_synced_index_no_issues(self):
+        from validators import check_index_sync
+        # Create index.md that references the area overview
+        (self.tmpdir / "docs" / "index.md").write_text("# Knowledge Base\n\n## Area\n\n| [Overview](area/overview.md) |\n")
+        issues = check_index_sync(self.tmpdir, knowledge_dir_name="docs")
+        self.assertEqual(issues, [])
+
+    def test_topic_on_disk_not_in_index_warns(self):
+        from validators import check_index_sync
+        # Create a topic file not listed in index
+        _write(
+            self.tmpdir / "docs" / "area" / "new-topic.md",
+            _valid_md("working"),
+        )
+        (self.tmpdir / "docs" / "index.md").write_text("# Knowledge Base\n\n## Area\n\n| [Overview](area/overview.md) |\n")
+        issues = check_index_sync(self.tmpdir, knowledge_dir_name="docs")
+        self.assertTrue(any("new-topic.md" in i["message"] for i in issues))
+
+    def test_check_index_sync_in_health_check(self):
+        """check_index_sync is included in the Tier 1 health check."""
+        (self.tmpdir / "docs" / "index.md").write_text("# Knowledge Base\n")
+        _write(
+            self.tmpdir / "docs" / "area" / "unlisted.md",
+            _valid_md("working"),
+        )
+        result = run_health_check(self.tmpdir)
+        index_issues = [i for i in result["issues"] if "index.md" in i["message"]]
+        self.assertGreater(len(index_issues), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
