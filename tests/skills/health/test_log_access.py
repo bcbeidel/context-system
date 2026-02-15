@@ -2,6 +2,7 @@
 
 import json
 import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -94,6 +95,66 @@ class TestLogIfKnowledgeFile(unittest.TestCase):
         """A nonexistent file path should return False without error."""
         logged = log_if_knowledge_file(self.tmpdir, "/nonexistent/path.md")
         self.assertFalse(logged)
+
+
+
+class TestHookEntryPoint(unittest.TestCase):
+    """Tests for hook_log_access.py CLI entry point."""
+
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.kb_dir = self.tmpdir / "docs"
+        self.kb_dir.mkdir()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def _run_hook(self, tool_input: dict) -> subprocess.CompletedProcess:
+        """Run hook_log_access.py with tool input on stdin."""
+        script = Path(__file__).resolve().parent.parent.parent.parent / \
+            "dewey" / "skills" / "health" / "scripts" / "hook_log_access.py"
+        return subprocess.run(
+            ["python3", str(script), "--kb-root", str(self.tmpdir)],
+            input=json.dumps(tool_input),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+
+    def test_logs_knowledge_file_via_stdin(self):
+        """Hook should log a knowledge file path received via stdin."""
+        topic = self.kb_dir / "area" / "topic.md"
+        topic.parent.mkdir(parents=True)
+        topic.write_text("content")
+        result = self._run_hook({"file_path": str(topic)})
+        self.assertEqual(result.returncode, 0)
+        log = self.tmpdir / ".dewey" / "utilization" / "log.jsonl"
+        self.assertTrue(log.exists())
+
+    def test_ignores_non_knowledge_file(self):
+        """Hook should silently ignore non-knowledge files."""
+        result = self._run_hook({"file_path": str(self.tmpdir / "README.md")})
+        self.assertEqual(result.returncode, 0)
+        log = self.tmpdir / ".dewey" / "utilization" / "log.jsonl"
+        self.assertFalse(log.exists())
+
+    def test_handles_missing_file_path(self):
+        """Hook should handle missing file_path in input without error."""
+        result = self._run_hook({"other_key": "value"})
+        self.assertEqual(result.returncode, 0)
+
+    def test_handles_invalid_json(self):
+        """Hook should handle non-JSON stdin without crashing."""
+        script = Path(__file__).resolve().parent.parent.parent.parent / \
+            "dewey" / "skills" / "health" / "scripts" / "hook_log_access.py"
+        result = subprocess.run(
+            ["python3", str(script), "--kb-root", str(self.tmpdir)],
+            input="not json",
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        self.assertEqual(result.returncode, 0)
 
 
 if __name__ == "__main__":
