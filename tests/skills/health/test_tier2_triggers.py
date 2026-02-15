@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 from tier2_triggers import (
+    trigger_citation_quality,
     trigger_concrete_examples,
     trigger_depth_accuracy,
     trigger_source_drift,
@@ -359,6 +360,116 @@ class TestTriggerConcreteExamples(unittest.TestCase):
         self.assertFalse(ctx["has_table"])
         self.assertFalse(ctx["has_numeric_example"])
         self.assertIn("section_word_count", ctx)
+
+
+# ======================================================================
+# TestTriggerCitationQuality
+# ======================================================================
+
+
+class TestTriggerCitationQuality(unittest.TestCase):
+    """Tests for trigger_citation_quality."""
+
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def test_unique_urls_no_trigger(self):
+        """All inline citations use different URLs — no trigger."""
+        body = (
+            "## Key Guidance\n"
+            "- Do this [source](https://example.com/one)\n"
+            "- Do that [source](https://example.com/two)\n"
+            "- Also this [ref](https://example.com/three)\n"
+        )
+        f = _write(self.tmpdir / "topic.md", _fm("working") + body)
+        self.assertEqual(trigger_citation_quality(f), [])
+
+    def test_duplicate_url_triggers(self):
+        """Same URL used 3+ times triggers."""
+        body = (
+            "## Key Guidance\n"
+            "- Do this [source](https://example.com/same)\n"
+            "- Do that [source](https://example.com/same)\n"
+            "- Also [ref](https://example.com/same)\n"
+        )
+        f = _write(self.tmpdir / "topic.md", _fm("working") + body)
+        results = trigger_citation_quality(f)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["trigger"], "citation_quality")
+
+    def test_two_duplicates_no_trigger(self):
+        """Same URL used only twice does not trigger (threshold is 3)."""
+        body = (
+            "## Key Guidance\n"
+            "- Do this [source](https://example.com/same)\n"
+            "- Do that [source](https://example.com/same)\n"
+            "- Also [ref](https://example.com/other)\n"
+        )
+        f = _write(self.tmpdir / "topic.md", _fm("working") + body)
+        self.assertEqual(trigger_citation_quality(f), [])
+
+    def test_only_working_depth(self):
+        """Non-working depth files should not trigger."""
+        body = (
+            "## Key Guidance\n"
+            "- Do this [s](https://example.com/same)\n"
+            "- Do that [s](https://example.com/same)\n"
+            "- Also [s](https://example.com/same)\n"
+        )
+        f = _write(self.tmpdir / "topic.md", _fm("overview") + body)
+        self.assertEqual(trigger_citation_quality(f), [])
+
+    def test_checks_watch_out_for_section(self):
+        """Duplicate URLs in Watch Out For section also trigger."""
+        body = (
+            "## Watch Out For\n"
+            "- Danger [s](https://example.com/same)\n"
+            "- Risk [s](https://example.com/same)\n"
+            "- Pitfall [s](https://example.com/same)\n"
+        )
+        f = _write(self.tmpdir / "topic.md", _fm("working") + body)
+        results = trigger_citation_quality(f)
+        self.assertEqual(len(results), 1)
+
+    def test_duplicates_across_sections(self):
+        """URLs counted across both Key Guidance and Watch Out For."""
+        body = (
+            "## Key Guidance\n"
+            "- Do this [s](https://example.com/same)\n"
+            "- Do that [s](https://example.com/same)\n"
+            "\n"
+            "## Watch Out For\n"
+            "- Danger [s](https://example.com/same)\n"
+        )
+        f = _write(self.tmpdir / "topic.md", _fm("working") + body)
+        results = trigger_citation_quality(f)
+        self.assertEqual(len(results), 1)
+
+    def test_context_includes_duplicate_urls(self):
+        """Context should include duplicate_urls map and counts."""
+        body = (
+            "## Key Guidance\n"
+            "- A [s](https://example.com/dup)\n"
+            "- B [s](https://example.com/dup)\n"
+            "- C [s](https://example.com/dup)\n"
+            "- D [s](https://example.com/other)\n"
+        )
+        f = _write(self.tmpdir / "topic.md", _fm("working") + body)
+        results = trigger_citation_quality(f)
+        ctx = results[0]["context"]
+        self.assertIn("duplicate_urls", ctx)
+        self.assertEqual(ctx["duplicate_urls"]["https://example.com/dup"], 3)
+        self.assertEqual(ctx["total_inline_citations"], 4)
+        self.assertEqual(ctx["unique_inline_citations"], 2)
+
+    def test_no_sections_no_trigger(self):
+        """File without Key Guidance or Watch Out For should not trigger."""
+        body = "## In Practice\nSome [link](https://example.com/same) repeated [here](https://example.com/same) and [here](https://example.com/same).\n"
+        f = _write(self.tmpdir / "topic.md", _fm("working") + body)
+        self.assertEqual(trigger_citation_quality(f), [])
 
 
 if __name__ == "__main__":

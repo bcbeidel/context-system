@@ -394,3 +394,56 @@ def trigger_concrete_examples(file_path: Path) -> list[dict]:
         })
 
     return results
+
+
+def trigger_citation_quality(file_path: Path) -> list[dict]:
+    """Trigger when the same inline citation URL appears 3+ times.
+
+    Working-depth only.  Checks "Key Guidance" and "Watch Out For"
+    sections for duplicate ``[text](url)`` links.  Repeated URLs
+    suggest shallow sourcing — a single generic page cited to cover
+    multiple distinct claims.
+    """
+    results: list[dict] = []
+    name = str(file_path)
+    fm = parse_frontmatter(file_path)
+
+    if fm.get("depth") != "working":
+        return results
+
+    text = file_path.read_text()
+    body = _body_without_frontmatter(text)
+
+    url_counts: dict[str, int] = {}
+
+    for section_name in ("Key Guidance", "Watch Out For"):
+        section = _extract_section(body, section_name)
+        if section is None:
+            continue
+        links = re.findall(r"\[([^\]]*)\]\((https?://[^)]+)\)", section)
+        for _text, url in links:
+            url_counts[url] = url_counts.get(url, 0) + 1
+
+    if not url_counts:
+        return results
+
+    duplicate_urls = {url: count for url, count in url_counts.items() if count >= 3}
+
+    if duplicate_urls:
+        total = sum(url_counts.values())
+        unique = len(url_counts)
+        results.append({
+            "file": name,
+            "trigger": "citation_quality",
+            "reason": (
+                f"{len(duplicate_urls)} URL(s) cited 3+ times; "
+                f"possible shallow sourcing"
+            ),
+            "context": {
+                "duplicate_urls": duplicate_urls,
+                "total_inline_citations": total,
+                "unique_inline_citations": unique,
+            },
+        })
+
+    return results
