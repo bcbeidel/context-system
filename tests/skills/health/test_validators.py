@@ -408,6 +408,15 @@ class TestCheckSourceUrls(unittest.TestCase):
         issues = check_source_urls(f)
         self.assertEqual(issues, [])
 
+    def test_structured_url_passes(self):
+        """Source entries in 'url: https://...' format should be valid."""
+        f = _write(
+            self.tmpdir / "a.md",
+            "---\nsources:\n  - url: https://example.com/doc\n---\n",
+        )
+        issues = check_source_urls(f)
+        self.assertEqual(issues, [])
+
 
 if __name__ == "__main__":
     unittest.main()

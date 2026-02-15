@@ -293,8 +293,11 @@ def check_source_urls(file_path: Path) -> list[dict]:
     if not isinstance(sources, list):
         return issues
 
-    for url in sources:
-        url = str(url).strip()
+    for entry in sources:
+        url = str(entry).strip()
+        # Handle structured format: "url: https://..." from YAML dicts
+        if url.startswith("url:"):
+            url = url[4:].strip()
         # Skip placeholder comments
         if "<!--" in url:
             continue
