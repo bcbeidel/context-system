@@ -145,7 +145,7 @@ All validators and triggers return structured dicts:
 | Domain discovery (`/dewey:explore`) | Complete |
 | Tier 1 deterministic health checks (7 validators) | Complete |
 | Tier 2 pre-screener (5 triggers) | Complete |
-| Tier 2 LLM-assisted audit workflow | In progress |
+| Tier 2 LLM-assisted audit workflow | Complete |
 | Tier 3 human decision queue | Designed, not yet tested |
 | Utilization tracking | Infrastructure scaffolded |
 | History / baselines | Infrastructure scaffolded |
