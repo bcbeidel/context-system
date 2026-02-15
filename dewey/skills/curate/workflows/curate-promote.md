@@ -1,5 +1,5 @@
 <objective>
-Promote a validated proposal from _proposals/ into a domain area in the knowledge base.
+Promote a validated proposal from _proposals/ into a domain area, create the reference companion, and update all indexes.
 </objective>
 
 <process>
@@ -34,25 +34,83 @@ Check that `docs/<target_area>/` exists. If not, inform the user and suggest cre
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/promote.py --kb-root <kb_root> --proposal "<slug>" --target-area "<target_area>"
 ```
 
-## Step 5: Report what happened
+This moves the proposal to `docs/<target_area>/<slug>.md` and strips proposal-specific frontmatter (status, proposed_by, rationale).
 
-Show the user:
-- The proposal file was removed from `docs/_proposals/`
-- The topic file was created at `docs/<target_area>/<slug>.md`
-- Proposal-specific frontmatter (status, proposed_by, rationale) was stripped
+## Step 5: Create reference companion
 
-## Step 6: Remind user of next steps
+If `docs/<target_area>/<slug>.ref.md` does not already exist, create it with:
 
-"The proposal has been promoted. To finalize:
+- Frontmatter matching the promoted topic (same sources, last_validated, relevance, but `depth: reference`)
+- A terse, scannable quick-lookup version of the key guidance from the promoted topic
+- Tables, lists, quick rules -- minimal prose
+- A "See also" link back to the working-knowledge file
 
-1. **Update AGENTS.md** -- Add the new topic to the manifest under the `<target_area>` domain area
-2. **Update index.md** -- Add the topic to `docs/index.md`
-3. **Fill in content** -- Complete any remaining template sections in the promoted file"
+## Step 6: Update indexes
+
+Update the three index files. When updating AGENTS.md or CLAUDE.md, only modify content between `<!-- dewey:kb:begin -->` / `<!-- dewey:kb:end -->` markers.
+
+### 6a. AGENTS.md -- add topic to the domain area table
+
+The managed section contains domain area headings like `### area-slug`. Under each heading is a topic table. Add a row:
+
+```markdown
+### streamlit-patterns
+
+| Topic | Description |
+|-------|-------------|
+| [Multipage Apps](docs/streamlit-patterns/multipage-apps.md) | pages/ directory vs st.navigation, routing, and access control |
+```
+
+- If no table exists yet under the heading, create one with the header row + separator + new row
+- Link format: `[Topic Name](docs/<area>/<slug>.md)` -- always include the file path
+- Description: one-line summary of the topic
+- Do NOT use bullet lists -- always use a table row with a linked path
+
+### 6b. overview.md -- add topic to table AND populate Key Sources
+
+Make two updates to `docs/<area>/overview.md`:
+
+**"How It's Organized" table** -- add a row:
+
+```markdown
+| [Multipage Apps](multipage-apps.md) | pages/ directory vs st.navigation, routing, and access control |
+```
+
+Links are relative within the area directory, so use `<slug>.md` (not the full `docs/<area>/` path).
+
+**"Key Sources" section** -- if still a placeholder, replace with the primary sources from the promoted topic's frontmatter:
+
+```markdown
+## Key Sources
+- [Source Title](https://example.com) -- Brief description
+```
+
+### 6c. CLAUDE.md -- verify domain area is listed
+
+CLAUDE.md's Domain Areas table lists areas, not individual topics. After promoting, verify the area already appears in the table. If the area is missing, add a row:
+
+```markdown
+| area-name | `docs/area-slug/` | [overview.md](docs/area-slug/overview.md) |
+```
+
+If the area is already listed, no changes needed -- do not add individual topics to CLAUDE.md.
+
+## Step 7: Report what was done
+
+Summarize all changes:
+- Promoted file location
+- Reference companion created (if new)
+- AGENTS.md row added
+- overview.md updated
+- CLAUDE.md verified
 </process>
 
 <success_criteria>
 - Proposal file removed from _proposals/
-- Topic file created in target domain area
-- Proposal-specific frontmatter stripped
-- User reminded to update AGENTS.md and index.md
+- Topic file created in target domain area with proposal frontmatter stripped
+- Reference companion (`<slug>.ref.md`) created with terse quick-lookup content
+- AGENTS.md has a linked table row (`[Topic](docs/<area>/<slug>.md)`) under the domain area heading -- not a bullet
+- overview.md "How It's Organized" has a linked table row for the topic
+- overview.md "Key Sources" is populated (not a placeholder) if this is the first topic in the area
+- CLAUDE.md domain area is present in the Domain Areas table
 </success_criteria>
