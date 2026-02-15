@@ -5,14 +5,30 @@ Only stdlib is used.  The function never overwrites existing files.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
-from skills.init.scripts.templates import (
-    _slugify,
-    render_agents_md,
-    render_index_md,
-    render_overview_md,
-)
+# Support both package-style imports (when used as a library via pytest) and
+# direct execution (``python scaffold.py``).  The try/except lets the module
+# work in both contexts without requiring the caller to manipulate sys.path.
+try:
+    from skills.init.scripts.templates import (
+        _slugify,
+        render_agents_md,
+        render_index_md,
+        render_overview_md,
+    )
+except ModuleNotFoundError:
+    # Running as a standalone script — add the project root to sys.path.
+    _project_root = str(Path(__file__).resolve().parent.parent.parent.parent)
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
+    from skills.init.scripts.templates import (
+        _slugify,
+        render_agents_md,
+        render_index_md,
+        render_overview_md,
+    )
 
 
 def scaffold_kb(
@@ -113,3 +129,25 @@ def scaffold_kb(
     for item in created:
         summary_lines.append(f"  - {item}")
     return "\n".join(summary_lines)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Scaffold a knowledge base.")
+    parser.add_argument("--target", required=True, help="Target directory")
+    parser.add_argument("--role", required=True, help="Role name")
+    parser.add_argument(
+        "--areas",
+        default="",
+        help="Comma-separated domain area names",
+    )
+    args = parser.parse_args()
+
+    areas = (
+        [a.strip() for a in args.areas.split(",") if a.strip()]
+        if args.areas
+        else []
+    )
+    result = scaffold_kb(Path(args.target), args.role, areas)
+    print(result)
