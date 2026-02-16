@@ -15,7 +15,7 @@ Capture the JSON output. It contains two top-level sections:
 
 Present the Tier 1 summary as in the health-check workflow.
 
-The Tier 2 pre-screener runs 6 deterministic triggers on each file and returns a structured queue with context data for each item. Present the trigger summary:
+The Tier 2 pre-screener runs 9 deterministic triggers on each file and returns a structured queue with context data for each item. Present the trigger summary:
 
 | Trigger | Count | Description |
 |---------|-------|-------------|
@@ -25,6 +25,9 @@ The Tier 2 pre-screener runs 6 deterministic triggers on each file and returns a
 | why_quality | N | Working files with missing or thin "Why This Matters" |
 | concrete_examples | N | Working files with missing or abstract "In Practice" |
 | citation_quality | N | Working files with duplicate inline citation URLs |
+| source_authority | N | Working files where all sources are community-tier |
+| provenance_completeness | N | Working files with incomplete Source Evaluation provenance |
+| recommendation_coverage | N | Working files where >50% of recommendations lack citations |
 
 "**Tier 2 evaluation queue:** <N> items across <M> files."
 
@@ -67,6 +70,24 @@ A single documentation index page (e.g., the Feature Store overview) cited to ba
 
 **citation_quality — OK:**
 Each inline citation links to a page or section that directly addresses the specific claim. Different claims cite different URLs, or the same URL only when it genuinely covers both claims.
+
+**source_authority — Flag:**
+All three sources are Medium articles by anonymous authors with no verifiable credentials. No official documentation, academic source, or recognized industry authority anchors the claims.
+
+**source_authority — OK:**
+One of three sources is a community blog, but the other two are official documentation and an RFC. The community source adds practical color; the authoritative sources anchor the factual claims.
+
+**provenance_completeness — Flag:**
+Source Evaluation section contains a narrative assessment ("these sources look good") but no structured provenance block. There's no machine-readable record of when sources were evaluated, what claims were verified, or whether counter-evidence was sought.
+
+**provenance_completeness — OK:**
+Source Evaluation section contains both a narrative assessment and a complete `<!-- dewey:provenance {...} -->` block with `evaluated` date, `sources` list, `counter_evidence` findings, and `cross_validation` with `claims_total > 0`.
+
+**recommendation_coverage — Flag:**
+Key Guidance lists 8 recommendations but only 1 has an inline citation. The reader cannot trace most guidance to any supporting evidence.
+
+**recommendation_coverage — OK:**
+Key Guidance lists 6 recommendations with 4 inline citations. The 2 uncited items are common-sense cautions ("test in staging first") that don't require external backing.
 
 ## Step 2: Perform Tier 2 LLM assessment
 
@@ -122,6 +143,36 @@ For items with `trigger: source_primacy`, the context includes `recommendation_c
 
 For items with `trigger: citation_quality`, the context includes `duplicate_urls`, `total_inline_citations`, and `unique_inline_citations`. Evaluate whether the duplicated URLs genuinely support each claim they're cited for, or whether they are generic pages being reused to satisfy citation count thresholds. A single documentation index page cited 3 times for different claims is a flag; the same URL cited for closely related points within a single recommendation may be OK.
 
+### 2g. Source authority
+
+For items with `trigger: source_authority`, the context includes `source_count` and `classifications` (a map of URL to authority tier). All sources are classified as community-tier (Medium, dev.to, Stack Overflow, Reddit, etc.) with no authoritative anchor. Evaluate:
+
+- Do the community sources cite or reference authoritative primary sources that could be added to frontmatter?
+- Are the claims experience-based opinions (acceptable from community sources) or factual assertions that need authoritative backing?
+- Would adding an official documentation link, RFC, or academic source strengthen the entry?
+
+Flag if the entry makes factual claims that should be anchored to authoritative sources. OK if the entry is primarily experience-based guidance where community voices are the natural authority.
+
+### 2h. Provenance completeness
+
+For items with `trigger: provenance_completeness`, the context includes `has_section`, `has_provenance_block`, and `missing_fields`. The Source Evaluation section exists but the structured provenance block is missing or incomplete. Evaluate:
+
+- If no provenance block: does the narrative assessment contain enough information to reconstruct one (evaluation date, source list, counter-evidence search)?
+- If missing fields: which fields are absent (`evaluated`, `sources`, `counter_evidence`, `cross_validation`)?
+- Is the Source Evaluation substantive enough that adding the provenance block is a straightforward formatting task, or does the evaluation itself need to be redone?
+
+Flag with specific guidance on which fields to add. If the narrative is thin, recommend re-running the source evaluation workflow rather than just adding an empty provenance block.
+
+### 2i. Recommendation coverage
+
+For items with `trigger: recommendation_coverage`, the context includes `total_recommendations`, `cited_recommendations`, `uncited_recommendations`, and `uncited_ratio`. More than 50% of recommendations in Key Guidance and Watch Out For lack inline citations. Evaluate:
+
+- Which uncited recommendations make factual claims that need backing vs. common-sense cautions that don't?
+- For factual claims, can you identify appropriate sources via WebFetch?
+- Are the existing citations high-quality, or is the entry broadly under-sourced?
+
+Flag if uncited items include specific factual claims, platform behaviors, or quantitative thresholds. OK if uncited items are experience-based cautions ("always test in staging," "prefer simplicity") that don't require external evidence.
+
 ## Step 3: Persist results
 
 Write the combined Tier 2 assessment to `.dewey/health/tier2-report.json` so `health-review.md` can read results without re-running:
@@ -148,9 +199,9 @@ Format the combined Tier 1 + Tier 2 report:
 ### Tier 2: LLM Assessment
 <N> entries evaluated.
 
-| File | Source Drift | Depth Accuracy | Why Quality | In Practice Quality | Source Primacy |
-|------|-------------|----------------|-------------|---------------------|---------------|
-| <path> | OK / Flag | OK / Flag | OK / Flag | OK / Flag | OK / Flag |
+| File | Source Drift | Depth Accuracy | Why Quality | In Practice Quality | Source Primacy | Source Authority | Provenance | Rec Coverage |
+|------|-------------|----------------|-------------|---------------------|---------------|-----------------|------------|--------------|
+| <path> | OK / Flag | OK / Flag | OK / Flag | OK / Flag | OK / Flag | OK / Flag | OK / Flag | OK / Flag |
 
 ### Detailed Findings
 <for each flagged item, provide specific reasoning and a recommendation>
@@ -179,6 +230,19 @@ When fixing flagged items (either now or in a follow-up session), all new conten
 **Overview/orientation fixes:**
 - New prose making factual claims (latency values, architectural relationships, platform behaviors) must cite sources or qualify with hedging language.
 - Do not introduce uncited factual assertions while fixing other issues.
+
+**Source Authority fixes:**
+- Add at least one authoritative source (official docs, RFC, .gov/.edu, recognized industry authority) to anchor the factual claims.
+- Community sources may remain alongside authoritative ones — they add practical perspective. But they cannot be the sole backing for factual assertions.
+
+**Provenance fixes:**
+- Add the `<!-- dewey:provenance {...} -->` block with all required fields: `evaluated`, `sources` (non-empty list), `counter_evidence`, `cross_validation` (with `claims_total > 0`).
+- If the Source Evaluation narrative is thin, re-run the source evaluation workflow from `curate-add` (Steps 3-4) rather than fabricating provenance metadata.
+
+**Recommendation Coverage fixes:**
+- Add inline citations to recommendations that make specific factual claims, cite quantitative thresholds, or describe platform-specific behaviors.
+- Experience-based cautions ("test in staging," "start simple") do not require citations — qualify them with hedging language instead.
+- Do not add citations to generic documentation pages just to improve the ratio. Each citation must link to content that directly supports the specific recommendation.
 
 **Self-check:** Before completing remediation, verify that every new paragraph you wrote would pass the same Tier 2 assessment that flagged the original content.
 
