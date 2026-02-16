@@ -3,52 +3,56 @@ name: report-issue
 description: Submit bug reports, feature ideas, or general feedback for the Dewey plugin to the project's GitHub issue tracker
 ---
 
-<essential_principles>
-## What This Skill Does
-
+<objective>
 Lets plugin users submit feedback to the Dewey GitHub repository without needing to know the repo URL or issue template structure. Claude gathers freeform input, classifies it, drafts a GitHub issue, shows a preview, and submits via `gh`.
+</objective>
 
-## Core Approach
+<quick_start>
+Invoke `/dewey:report-issue` or say "I want to report a bug in Dewey". Claude gathers your feedback, classifies it, drafts a GitHub issue, shows you a preview, and submits after your approval.
 
+Prerequisites: `gh` CLI installed and authenticated (`gh auth login`).
+</quick_start>
+
+<context>
+<approach>
 1. **Gather** -- The user describes what's on their mind in natural language.
 2. **Classify** -- Claude determines whether it's a bug, enhancement, or general feedback.
 3. **Draft** -- Claude composes a structured GitHub issue body.
 4. **Confirm** -- The user reviews and approves before anything is posted.
 5. **Submit** -- `gh issue create` posts to the Dewey repo.
+</approach>
 
-## Design Philosophy
-
+<philosophy>
 - **Freeform intake** -- The user says what they want. Claude extracts structure.
 - **User controls content** -- No automatic capture of conversation history or environment details. The user sees and approves everything before submission.
 - **One command, one outcome** -- A GitHub issue on `bcbeidel/dewey`.
+</philosophy>
 
-## Key Variables
-
+<variables>
 - `$ARGUMENTS` -- Optional free-text feedback passed directly to the skill
 - `${CLAUDE_PLUGIN_ROOT}` -- Root directory of the Dewey plugin
-</essential_principles>
+</variables>
+</context>
 
 <intake>
 This skill activates on `/dewey:report-issue` or when the user expresses feedback intent: "report a bug in dewey", "I have feedback about the plugin", "something isn't working in dewey", "I'd like to suggest a feature for dewey", or similar phrases.
 
-## Step 1: Gather feedback
-
+<gather_feedback>
 If `$ARGUMENTS` contains substantive feedback, use it directly. Do not re-ask.
 
 If invoked with no arguments and no prior conversational context, ask one open-ended question:
 
 > "What feedback do you have about Dewey? This could be a bug report, a feature idea, or anything else on your mind."
+</gather_feedback>
 
-## Step 2: Route
-
+<route>
 All feedback routes to the same workflow. There is only one.
 
 Route to `workflows/report-issue-submit.md`.
+</route>
 </intake>
 
 <workflows_index>
-## Available Workflows
-
 All workflows in `workflows/`:
 
 | Workflow | Purpose |

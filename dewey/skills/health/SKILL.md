@@ -3,35 +3,41 @@ name: health
 description: Validate knowledge base quality, check freshness, analyze coverage gaps, and generate health reports
 ---
 
-<essential_principles>
-## What This Skill Does
-
+<objective>
 Validates knowledge base quality across three tiers and three quality dimensions. Runs deterministic checks, LLM-assisted assessments, and surfaces items requiring human judgment. Produces actionable health reports with severity-ranked issues.
-
-## Three-Tier Validation
 
 1. **Tier 1 -- Deterministic (Python)** -- Fast, automated checks run by `check_knowledge_base.py`. 18 per-file validators (frontmatter, sections, size bounds, readability, sources, freshness, and more) plus 6 cross-file validators (manifest sync, curation plan sync, proposal integrity, link graph, duplicate detection, naming conventions). Auto-fix available for common issues. No LLM required. CI-friendly.
 2. **Tier 2 -- LLM-Assisted (Claude)** -- Claude evaluates items flagged by Tier 1 or entries with stale `last_validated` dates. Assesses source drift, depth label accuracy, "Why This Matters" quality, and "In Practice" concreteness.
 3. **Tier 3 -- Human Judgment** -- Surfaces decisions that require human input: relevance questions, scope decisions, pending proposals, and conflict resolution between knowledge base claims and updated sources.
+</objective>
 
-## Three Quality Dimensions
+<quick_start>
+Run Tier 1 checks (default): `/dewey:health` or `/dewey:health check`
+Run full audit (Tier 1 + 2): `/dewey:health audit`
+Surface human decisions: `/dewey:health review`
+Check coverage gaps: `/dewey:health coverage`
+Check staleness: `/dewey:health freshness`
+</quick_start>
 
+<context>
+<quality_dimensions>
 1. **Relevance** -- Is this content needed by the role? Does the relevance statement accurately describe who benefits and when?
 2. **Accuracy / Freshness** -- Are claims current and traceable to sources? Has the content been validated recently?
 3. **Structural Fitness** -- Does the content follow the knowledge base spec? Correct depth, proper sections, valid frontmatter, companion files present?
+</quality_dimensions>
 
-## Design Philosophy
-
+<philosophy>
 - **Fast feedback first** -- Tier 1 runs in seconds, catches structural issues immediately
 - **LLM where it matters** -- Tier 2 only evaluates what Tier 1 flags or what's overdue
 - **Humans decide scope** -- Tier 3 never auto-resolves relevance or pruning decisions
 - **Severity-ranked output** -- Every issue carries a severity (fail, warn) so users can prioritize
+</philosophy>
 
-## Key Variables
-
+<variables>
 - `$ARGUMENTS` -- Arguments passed to this skill (workflow name and parameters)
 - `${CLAUDE_PLUGIN_ROOT}` -- Root directory of the Dewey plugin
-</essential_principles>
+</variables>
+</context>
 
 <intake>
 Validating knowledge base quality.
@@ -61,8 +67,6 @@ Parse the action from `$ARGUMENTS`. If no arguments provided, run `check` (Tier 
 </intake>
 
 <routing>
-## Argument-Based Routing
-
 Parse `$ARGUMENTS`:
 
 - Starts with `check` or no arguments provided -> Route to `workflows/health-check.md`
@@ -73,8 +77,6 @@ Parse `$ARGUMENTS`:
 </routing>
 
 <workflows_index>
-## Available Workflows
-
 All workflows in `workflows/`:
 
 | Workflow | Purpose |
@@ -87,8 +89,6 @@ All workflows in `workflows/`:
 </workflows_index>
 
 <references_index>
-## Domain Knowledge
-
 All references in `references/`:
 
 | Reference | Content |
@@ -99,8 +99,6 @@ All references in `references/`:
 </references_index>
 
 <scripts_integration>
-## Python Helper Scripts
-
 Located in `scripts/`:
 
 **check_knowledge_base.py** -- Health check runner
