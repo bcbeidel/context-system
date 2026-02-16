@@ -308,13 +308,14 @@ class TestTier2OutputSchema(unittest.TestCase):
     # test_valid_trigger_names
     # ------------------------------------------------------------------
     def test_valid_trigger_names(self):
-        """Every trigger name must be one of the 5 known triggers."""
+        """Every trigger name must be one of the 6 known triggers."""
         known_triggers = {
             "source_drift",
             "depth_accuracy",
             "source_primacy",
             "why_quality",
             "concrete_examples",
+            "citation_quality",
         }
         queue = self.result["queue"]
         self.assertTrue(len(queue) > 0, "Expected at least one queue item")
@@ -493,6 +494,97 @@ class TestCheckIndexSync(unittest.TestCase):
         result = run_health_check(self.tmpdir)
         index_issues = [i for i in result["issues"] if "index.md" in i["message"]]
         self.assertGreater(len(index_issues), 0)
+
+
+class TestInventoryIntegration(unittest.TestCase):
+    """Tests for inventory regression detection in the health check runner."""
+
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.kb = self.tmpdir / "docs"
+        self.kb.mkdir()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def test_file_list_recorded_in_snapshot(self):
+        """run_health_check records discovered files in history snapshot."""
+        area = self.kb / "area"
+        area.mkdir()
+        _write(area / "overview.md", _valid_md("overview"))
+        _write(area / "topic.md", _valid_md("working"))
+        _write(area / "topic.ref.md", _valid_md("reference"))
+        run_health_check(self.tmpdir)
+
+        log = self.tmpdir / ".dewey" / "history" / "health-log.jsonl"
+        entry = json.loads(log.read_text().strip())
+        self.assertIn("file_list", entry)
+        self.assertEqual(len(entry["file_list"]), 3)
+        self.assertTrue(all("area/" in f for f in entry["file_list"]))
+
+    def test_missing_file_detected_on_second_run(self):
+        """Second health check detects file removed since first run."""
+        area = self.kb / "area"
+        area.mkdir()
+        _write(area / "overview.md", _valid_md("overview"))
+        topic = _write(area / "topic.md", _valid_md("working"))
+        _write(area / "topic.ref.md", _valid_md("reference"))
+
+        # First run records all 3 files
+        run_health_check(self.tmpdir)
+
+        # Remove a file
+        topic.unlink()
+
+        # Second run should detect the regression
+        result = run_health_check(self.tmpdir)
+        regression_issues = [
+            i for i in result["issues"] if "missing" in i["message"].lower()
+            and "topic.md" in i["message"]
+        ]
+        self.assertTrue(len(regression_issues) > 0)
+
+    def test_combined_report_records_file_list(self):
+        """run_combined_report also records file_list in snapshot."""
+        area = self.kb / "area"
+        area.mkdir()
+        _write(area / "overview.md", _valid_md("overview"))
+        run_combined_report(self.tmpdir)
+
+        log = self.tmpdir / ".dewey" / "history" / "health-log.jsonl"
+        entry = json.loads(log.read_text().strip())
+        self.assertIn("file_list", entry)
+
+
+class TestCitationQualityIntegration(unittest.TestCase):
+    """Tests for citation quality trigger in the prescreening runner."""
+
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.kb = self.tmpdir / "docs"
+        self.kb.mkdir()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def test_duplicate_citations_appear_in_queue(self):
+        """File with repeated inline citations produces a citation_quality trigger."""
+        area = self.kb / "area"
+        area.mkdir()
+        _write(area / "overview.md", _valid_md("overview"))
+        # extra_body is appended after ## Key Guidance + padding in _valid_md,
+        # so these links land inside the Key Guidance section (before any new ##).
+        body = (
+            "- A [s](https://example.com/dup)\n"
+            "- B [s](https://example.com/dup)\n"
+            "- C [s](https://example.com/dup)\n"
+        )
+        _write(area / "topic.md", _valid_md("working", extra_body=body))
+        _write(area / "topic.ref.md", _valid_md("reference"))
+
+        result = run_tier2_prescreening(self.tmpdir)
+        citation_items = [i for i in result["queue"] if i["trigger"] == "citation_quality"]
+        self.assertTrue(len(citation_items) > 0)
 
 
 if __name__ == "__main__":

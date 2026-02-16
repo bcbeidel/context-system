@@ -21,6 +21,7 @@ if _init_scripts not in sys.path:
 from config import read_knowledge_dir
 from history import record_snapshot
 from tier2_triggers import (
+    trigger_citation_quality,
     trigger_concrete_examples,
     trigger_depth_accuracy,
     trigger_source_drift,
@@ -33,6 +34,7 @@ from validators import (
     check_freshness,
     check_frontmatter,
     check_index_sync,
+    check_inventory_regression,
     check_section_ordering,
     check_size_bounds,
     check_source_urls,
@@ -80,6 +82,10 @@ def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
     all_issues: list[dict] = []
     md_files = _discover_md_files(kb_root, knowledge_dir_name)
 
+    # Compute relative paths for history tracking
+    knowledge_dir = kb_root / knowledge_dir_name
+    file_list = [str(f.relative_to(knowledge_dir)) for f in md_files]
+
     # Per-file validators
     for md_file in md_files:
         all_issues.extend(check_frontmatter(md_file))
@@ -92,6 +98,7 @@ def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
     # Structural validators (run once)
     all_issues.extend(check_coverage(kb_root, knowledge_dir_name=knowledge_dir_name))
     all_issues.extend(check_index_sync(kb_root, knowledge_dir_name=knowledge_dir_name))
+    all_issues.extend(check_inventory_regression(kb_root, file_list))
 
     # Build summary
     files_with_fails = set()
@@ -119,7 +126,7 @@ def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
         },
     }
     if _persist_history:
-        record_snapshot(kb_root, result["summary"], None)
+        record_snapshot(kb_root, result["summary"], None, file_list=file_list)
     return result
 
 
@@ -129,6 +136,7 @@ _TIER2_TRIGGERS = [
     trigger_source_primacy,
     trigger_why_quality,
     trigger_concrete_examples,
+    trigger_citation_quality,
 ]
 
 
@@ -152,6 +160,9 @@ def run_tier2_prescreening(kb_root: Path, *, _persist_history: bool = True) -> d
     knowledge_dir_name = read_knowledge_dir(kb_root)
     md_files = _discover_md_files(kb_root, knowledge_dir_name)
 
+    knowledge_dir = kb_root / knowledge_dir_name
+    file_list = [str(f.relative_to(knowledge_dir)) for f in md_files]
+
     queue: list[dict] = []
     trigger_counts: dict[str, int] = {}
 
@@ -173,7 +184,7 @@ def run_tier2_prescreening(kb_root: Path, *, _persist_history: bool = True) -> d
         },
     }
     if _persist_history:
-        record_snapshot(kb_root, None, result["summary"])
+        record_snapshot(kb_root, None, result["summary"], file_list=file_list)
     return result
 
 
@@ -190,11 +201,19 @@ def run_combined_report(kb_root: Path) -> dict:
     dict
         ``{"tier1": <run_health_check result>, "tier2": <run_tier2_prescreening result>}``
     """
+    knowledge_dir_name = read_knowledge_dir(kb_root)
+    md_files = _discover_md_files(kb_root, knowledge_dir_name)
+    knowledge_dir = kb_root / knowledge_dir_name
+    file_list = [str(f.relative_to(knowledge_dir)) for f in md_files]
+
     result = {
         "tier1": run_health_check(kb_root, _persist_history=False),
         "tier2": run_tier2_prescreening(kb_root, _persist_history=False),
     }
-    record_snapshot(kb_root, result["tier1"]["summary"], result["tier2"]["summary"])
+    record_snapshot(
+        kb_root, result["tier1"]["summary"], result["tier2"]["summary"],
+        file_list=file_list,
+    )
     return result
 
 
