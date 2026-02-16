@@ -136,7 +136,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/scaffold.py --target <dir> -
 ```
 
 **config.py** -- Read knowledge base configuration
-- `read_knowledge_dir(kb_root)` returns the configured knowledge directory (default: `docs`)
+- `read_knowledge_dir(knowledge_base_root)` returns the configured knowledge directory (default: `docs`)
 </scripts_integration>
 
 <success_criteria>

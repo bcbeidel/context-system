@@ -53,7 +53,7 @@ Present findings to the user before proceeding with promotion. If sources are we
 ## Step 5: Run promote script
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/promote.py --kb-root <kb_root> --proposal "<slug>" --target-area "<target_area>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/promote.py --knowledge-base-root <knowledge_base_root> --proposal "<slug>" --target-area "<target_area>"
 ```
 
 This moves the proposal to `docs/<target_area>/<slug>.md` and strips proposal-specific frontmatter (status, proposed_by, rationale).
@@ -69,7 +69,7 @@ If `docs/<target_area>/<slug>.ref.md` does not already exist, create it with:
 
 ## Step 7: Update indexes
 
-Update the three index files. When updating AGENTS.md or CLAUDE.md, only modify content between `<!-- dewey:kb:begin -->` / `<!-- dewey:kb:end -->` markers.
+Update the three index files. When updating AGENTS.md or CLAUDE.md, only modify content between `<!-- dewey:knowledge-base:begin -->` / `<!-- dewey:knowledge-base:end -->` markers.
 
 ### 6a. AGENTS.md -- add topic to the domain area table
 
@@ -126,7 +126,7 @@ If `.dewey/curation-plan.md` exists, check for an item matching the promoted top
 Regenerate the table of contents so the promoted topic appears:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/scaffold.py --target <kb_root> --rebuild-index
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/scaffold.py --target <knowledge_base_root> --rebuild-index
 ```
 
 ## Step 10: Report what was done

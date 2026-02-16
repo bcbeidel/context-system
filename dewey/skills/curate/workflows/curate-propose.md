@@ -29,12 +29,12 @@ Only proceed if the user confirms it is a genuinely new topic.
 
 Verify that `<knowledge-dir>/_proposals/` exists. If not, create it:
 ```bash
-mkdir -p <kb_root>/<knowledge-dir>/_proposals
+mkdir -p <knowledge_base_root>/<knowledge-dir>/_proposals
 ```
 
 Then run the propose script:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --kb-root <kb_root> --topic "<topic_name>" --relevance "<relevance>" --proposed-by "<proposed_by>" --rationale "<rationale>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --knowledge-base-root <knowledge_base_root> --topic "<topic_name>" --relevance "<relevance>" --proposed-by "<proposed_by>" --rationale "<rationale>"
 ```
 
 ## Step 4: Report what was created

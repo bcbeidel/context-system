@@ -177,7 +177,7 @@ The human brings domain judgment. Accept their edits and corrections. If they ap
 Run the propose script:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --kb-root <kb_root> --topic "<topic_name>" --relevance "<relevance>" --proposed-by "ingest" --rationale "Ingested from: <url>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --knowledge-base-root <knowledge_base_root> --topic "<topic_name>" --relevance "<relevance>" --proposed-by "ingest" --rationale "Ingested from: <url>"
 ```
 
 Then update the proposal file:

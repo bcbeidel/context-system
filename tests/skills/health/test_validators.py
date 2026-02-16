@@ -965,7 +965,7 @@ class TestCheckPlaceholderComments(unittest.TestCase):
         self.assertLessEqual(len(issues), 5)
 
     def test_managed_section_markers_not_flagged(self):
-        doc = self._fm() + "\n<!-- dewey:kb:begin -->\n# Topic\n<!-- dewey:kb:end -->\n"
+        doc = self._fm() + "\n<!-- dewey:knowledge-base:begin -->\n# Topic\n<!-- dewey:knowledge-base:end -->\n"
         f = _write(self.tmpdir / "a.md", doc)
         self.assertEqual(check_placeholder_comments(f), [])
 

@@ -9,7 +9,7 @@ Read `AGENTS.md` from the knowledge base root. Extract these three things:
 
 1. **Role definition** -- The role title from the `# Role:` heading (first H1)
 2. **Persona scope** -- The prose description in the "Who You Are" section. This describes the agent's expertise and behavioral scope. Note the domains and skills it mentions -- these define what the knowledge base _should_ cover.
-3. **Manifest entries** -- Inside the `<!-- dewey:kb:begin -->` / `<!-- dewey:kb:end -->` markers, extract:
+3. **Manifest entries** -- Inside the `<!-- dewey:knowledge-base:begin -->` / `<!-- dewey:knowledge-base:end -->` markers, extract:
    - **Domain areas** -- Each H3 heading (e.g., `### python-foundations`)
    - **Topics per area** -- Rows in the markdown table under each H3 (columns: Topic, Description). An area with no table rows is empty.
 

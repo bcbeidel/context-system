@@ -749,8 +749,8 @@ _PLACEHOLDER_PATTERNS = [
 
 # Markers to exclude — these are managed-section or provenance markers, not placeholders
 _MANAGED_MARKERS = [
-    "<!-- dewey:kb:begin -->",
-    "<!-- dewey:kb:end -->",
+    "<!-- dewey:knowledge-base:begin -->",
+    "<!-- dewey:knowledge-base:end -->",
     "<!-- dewey:provenance",
 ]
 

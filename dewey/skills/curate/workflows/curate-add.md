@@ -24,7 +24,7 @@ Check that `docs/<area>/` exists. If it does not, inform the user and suggest cr
 Run the create_topic script:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/create_topic.py --kb-root <kb_root> --area <area> --topic "<topic_name>" --relevance "<relevance>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/create_topic.py --knowledge-base-root <knowledge_base_root> --area <area> --topic "<topic_name>" --relevance "<relevance>"
 ```
 
 ### If mode is `update` (updating an existing topic):
@@ -148,7 +148,7 @@ The human brings domain judgment. Accept their edits and corrections. If they ap
 
 ## Step 6: Write approved content and update manifest
 
-Write the approved content to both topic files, then update the three index files below. When updating AGENTS.md or CLAUDE.md, only modify content between `<!-- dewey:kb:begin -->` / `<!-- dewey:kb:end -->` markers.
+Write the approved content to both topic files, then update the three index files below. When updating AGENTS.md or CLAUDE.md, only modify content between `<!-- dewey:knowledge-base:begin -->` / `<!-- dewey:knowledge-base:end -->` markers.
 
 ### 6a. AGENTS.md — add topic to the domain area table
 
@@ -204,7 +204,7 @@ If the area is already listed, no changes needed — do not add individual topic
 Regenerate the table of contents so the new topic appears:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/scaffold.py --target <kb_root> --rebuild-index
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/scaffold.py --target <knowledge_base_root> --rebuild-index
 ```
 
 ## Step 8: Update curation plan

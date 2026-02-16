@@ -16,8 +16,8 @@ from datetime import date
 # Managed-section markers
 # ---------------------------------------------------------------------------
 
-MARKER_BEGIN = "<!-- dewey:kb:begin -->"
-MARKER_END = "<!-- dewey:kb:end -->"
+MARKER_BEGIN = "<!-- dewey:knowledge-base:begin -->"
+MARKER_END = "<!-- dewey:knowledge-base:end -->"
 
 
 def _slugify(name: str) -> str:
