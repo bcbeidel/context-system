@@ -1,7 +1,7 @@
 """Health score history tracking.
 
 Persists timestamped snapshots of Tier 1 (and optionally Tier 2) health
-summaries to ``.dewey/history/health-log.jsonl`` inside the KB root.
+summaries to ``.dewey/history/health-log.jsonl`` inside the knowledge-base root.
 
 Only stdlib is used.
 """

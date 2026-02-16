@@ -73,7 +73,7 @@ Read `dewey/skills/curate/workflows/curate-discover.md` and confirm:
 - No reference to `/dewey:init` or `/dewey:explore`
 - scaffold.py called directly with `${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py`
 - Phase 6 builds the curation plan
-- `required_reading` includes `${CLAUDE_PLUGIN_ROOT}/skills/init/references/kb-spec-summary.md`
+- `required_reading` includes `${CLAUDE_PLUGIN_ROOT}/skills/init/references/knowledge-base-spec-summary.md`
 
 **Step 3: Commit**
 
@@ -109,7 +109,7 @@ With:
 
 If the user expressed a specific curation intent before setup began (e.g., "add a topic about X"), resume by routing to the appropriate curate workflow with that context. The intake classifier already identified their intent — carry it through.
 
-If no specific intent was expressed (user just wanted to set up the KB), present the curation plan and ask: "What would you like to work on first?"
+If no specific intent was expressed (user just wanted to set up the knowledge base), present the curation plan and ask: "What would you like to work on first?"
 ```
 
 2. Update `<objective>` to: "Evaluate the repo, understand the user's goals, scaffold a knowledge base, build a curation plan, and resume the user's original intent."
@@ -118,7 +118,7 @@ If no specific intent was expressed (user just wanted to set up the KB), present
 
 ```markdown
 <required_reading>
-Load `${CLAUDE_PLUGIN_ROOT}/skills/init/references/kb-spec-summary.md` for context on the knowledge base specification.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/init/references/knowledge-base-spec-summary.md` for context on the knowledge base specification.
 </required_reading>
 ```
 
@@ -129,7 +129,7 @@ Load `${CLAUDE_PLUGIN_ROOT}/skills/init/references/kb-spec-summary.md` for conte
 Read `dewey/skills/curate/workflows/curate-setup.md` and confirm:
 - No reference to `/dewey:curate add` or `/dewey:init` as next-step suggestions
 - scaffold.py path uses `${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/`
-- kb-spec-summary.md path uses `${CLAUDE_PLUGIN_ROOT}/skills/init/references/`
+- knowledge-base-spec-summary.md path uses `${CLAUDE_PLUGIN_ROOT}/skills/init/references/`
 - Step 7 resumes user intent
 
 **Step 3: Commit**
@@ -294,7 +294,7 @@ The full content should be:
 ```markdown
 ---
 name: curate
-description: Add, update, or manage content in a knowledge base — triggered by command or natural-language curation intent like "save this to my KB"
+description: Add, update, or manage content in a knowledge base — triggered by command or natural-language curation intent like "save this to my knowledge base"
 ---
 
 <essential_principles>
@@ -305,7 +305,7 @@ Single entry point for all knowledge base operations: discovering domains, scaff
 ## Core Approach
 
 1. **Understand intent** -- The user expresses what they want in natural language. Claude classifies and routes.
-2. **Assess KB state** -- Is there a knowledge base? A curation plan? Existing domain areas?
+2. **Assess knowledge-base state** -- Is there a knowledge base? A curation plan? Existing domain areas?
 3. **Route to workflow** -- Based on intent + state, route to the right workflow. No menus.
 
 ## Design Philosophy
@@ -324,7 +324,7 @@ Single entry point for all knowledge base operations: discovering domains, scaff
 </essential_principles>
 
 <intake>
-This skill activates on `/dewey:curate` or when the user expresses curation intent in conversation: "add this to the KB", "capture this as a topic", "save this to my knowledge base", "let's put this in the knowledge base", "I want to add a new domain area", or similar phrases.
+This skill activates on `/dewey:curate` or when the user expresses curation intent in conversation: "add this to the knowledge base", "capture this as a topic", "save this to my knowledge base", "let's put this in the knowledge base", "I want to add a new domain area", or similar phrases.
 
 ## Step 1: Gather intent
 
@@ -346,7 +346,7 @@ Check for:
 ### No knowledge base exists
 
 - **Vague or exploratory intent** ("help me set up", "I don't know where to start", no specific topic) → Route to `workflows/curate-discover.md`
-- **Clear intent with goals** ("I want a KB for marketing analytics", "build a knowledge base for my team") → Route to `workflows/curate-setup.md`
+- **Clear intent with goals** ("I want a knowledge base for marketing analytics", "build a knowledge base for my team") → Route to `workflows/curate-setup.md`
 - **Very specific intent** ("add a topic about bid strategies") → Route to `workflows/curate-setup.md` with a note to resume into the specific curation action after scaffolding
 
 ### Knowledge base exists, no curation plan
@@ -382,7 +382,7 @@ If intent is ambiguous, ask **one** clarifying question — not a menu of option
 During classification, if the user's topic doesn't fit any existing domain area:
 
 1. Tell the user: "This doesn't fit your existing areas ([list areas]). Want me to create a new domain area for it?"
-2. If yes: route to `workflows/curate-setup.md` (which handles adding areas to an existing KB via its re-init path), then resume into the original curation action
+2. If yes: route to `workflows/curate-setup.md` (which handles adding areas to an existing knowledge base via its re-init path), then resume into the original curation action
 3. If no: ask where they'd like to put it, or whether to skip
 </intake>
 
@@ -393,12 +393,12 @@ All workflows in `workflows/`:
 
 | Workflow | Purpose |
 |----------|---------|
-| curate-discover.md | Guided conversation to discover role, domains, scaffold KB, and build curation plan |
-| curate-setup.md | Evaluate repo, scaffold KB structure (or add areas to existing KB), build plan |
+| curate-discover.md | Guided conversation to discover role, domains, scaffold knowledge base, and build curation plan |
+| curate-setup.md | Evaluate repo, scaffold knowledge-base structure (or add areas to existing knowledge base), build plan |
 | curate-add.md | Create a new topic or update an existing one in a domain area |
 | curate-propose.md | Submit a topic proposal for review |
 | curate-promote.md | Promote a validated proposal into a domain area |
-| curate-ingest.md | Ingest an external URL — evaluate against KB, then propose or update |
+| curate-ingest.md | Ingest an external URL — evaluate against knowledge base, then propose or update |
 | curate-plan.md | View, add to, or remove items from the curation plan |
 </workflows_index>
 
@@ -409,28 +409,28 @@ All workflows in `workflows/`:
 
 **create_topic.py** -- Create topic files in a domain area
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/create_topic.py --kb-root <root> --area <area> --topic "<name>" --relevance "<relevance>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/create_topic.py --knowledge-base-root <root> --area <area> --topic "<name>" --relevance "<relevance>"
 ```
 
 **propose.py** -- Create a proposal file
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --kb-root <root> --topic "<name>" --relevance "<relevance>" --proposed-by "<who>" --rationale "<why>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --knowledge-base-root <root> --topic "<name>" --relevance "<relevance>" --proposed-by "<who>" --rationale "<why>"
 ```
 
 **promote.py** -- Move a proposal into a domain area
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/promote.py --kb-root <root> --proposal "<slug>" --target-area "<area>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/promote.py --knowledge-base-root <root> --proposal "<slug>" --target-area "<area>"
 ```
 
 **Init scripts** (shared infrastructure) in `${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/`:
 
-**scaffold.py** -- Create or extend KB directory structure
+**scaffold.py** -- Create or extend knowledge-base directory structure
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <dir> --role "<persona>" --areas "<area1>,<area2>"
 ```
 
 **config.py** -- Read knowledge base configuration
-- `read_knowledge_dir(kb_root)` returns the configured knowledge directory (default: `docs`)
+- `read_knowledge_dir(knowledge_base_root)` returns the configured knowledge directory (default: `docs`)
 </scripts_integration>
 
 <success_criteria>
@@ -452,7 +452,7 @@ Curation is successful when:
 Read `dewey/skills/curate/SKILL.md` and confirm:
 - YAML frontmatter has updated description mentioning natural-language triggers
 - No reference to `add`/`propose`/`promote`/`ingest`/`plan` as sub-commands or explicit arguments
-- Intake starts with "gather intent" (free text), then "assess KB state", then "route"
+- Intake starts with "gather intent" (free text), then "assess knowledge-base state", then "route"
 - All 7 workflows listed in workflows_index
 - Scripts integration references both curate/scripts/ and init/scripts/
 - No `<routing>` section with argument-based routing
@@ -521,7 +521,7 @@ ls dewey/skills/init/scripts/
 ls dewey/skills/init/references/
 ```
 
-Expected: scaffold.py, templates.py, config.py in scripts/; kb-spec-summary.md in references/
+Expected: scaffold.py, templates.py, config.py in scripts/; knowledge-base-spec-summary.md in references/
 
 **Step 3: Commit**
 
@@ -588,7 +588,7 @@ Expected: curate-add.md, curate-discover.md, curate-ingest.md, curate-plan.md, c
 ls dewey/skills/init/scripts/ dewey/skills/init/references/
 ```
 
-Expected: config.py, scaffold.py, templates.py in scripts/; kb-spec-summary.md in references/
+Expected: config.py, scaffold.py, templates.py in scripts/; knowledge-base-spec-summary.md in references/
 
 **Step 4: Verify no dangling references**
 

@@ -5,13 +5,13 @@
 
 ## Problem
 
-The utilization hook now captures which knowledge base files agents actually read. The health system tracks file inventory and content quality. But nothing connects these two data sources to surface actionable curation recommendations. A KB with 36 files has no way to tell you which files are ignored, which are over-relied-upon, or which high-traffic content is going stale.
+The utilization hook now captures which knowledge base files agents actually read. The health system tracks file inventory and content quality. But nothing connects these two data sources to surface actionable curation recommendations. A knowledge base with 36 files has no way to tell you which files are ignored, which are over-relied-upon, or which high-traffic content is going stale.
 
 ## Design
 
 ### Architecture
 
-New function `generate_recommendations()` in `check_kb.py` that joins utilization data against the file inventory to produce curation recommendations.
+New function `generate_recommendations()` in `check_knowledge_base.py` that joins utilization data against the file inventory to produce curation recommendations.
 
 ```
 utilization log.jsonl ──┐
@@ -78,7 +78,7 @@ Four categories, ordered by priority (highest first). A file gets at most one re
 
 ```python
 def generate_recommendations(
-    kb_root: Path,
+    knowledge_base_root: Path,
     min_reads: int = 10,
     min_days: int = 7,
 ) -> dict:
@@ -98,13 +98,13 @@ Override with `--min-reads 0 --min-days 0` for testing.
 
 ```bash
 # Standalone recommendations (default thresholds)
-python3 check_kb.py --kb-root sandbox --recommendations
+python3 check_knowledge_base.py --knowledge-base-root sandbox --recommendations
 
 # Testing with no thresholds
-python3 check_kb.py --kb-root sandbox --recommendations --min-reads 0 --min-days 0
+python3 check_knowledge_base.py --knowledge-base-root sandbox --recommendations --min-reads 0 --min-days 0
 
 # Combined with full health check
-python3 check_kb.py --kb-root sandbox --both --recommendations
+python3 check_knowledge_base.py --knowledge-base-root sandbox --both --recommendations
 ```
 
 When combined with `--both`, the recommendations key is added to the combined report:
@@ -117,7 +117,7 @@ When combined with `--both`, the recommendations key is added to the combined re
 
 | File | Changes |
 |------|---------|
-| `dewey/skills/health/scripts/check_kb.py` | Add `generate_recommendations()`, `--recommendations`/`--min-reads`/`--min-days` CLI flags, integration with `--both` |
+| `dewey/skills/health/scripts/check_knowledge_base.py` | Add `generate_recommendations()`, `--recommendations`/`--min-reads`/`--min-days` CLI flags, integration with `--both` |
 | `tests/skills/health/test_recommendations.py` | New test file for all recommendation categories, gating logic, CLI output |
 
 ## Not In Scope

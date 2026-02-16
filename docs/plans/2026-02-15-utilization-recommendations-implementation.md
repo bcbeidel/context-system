@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Add a `--recommendations` flag to `check_kb.py` that cross-references utilization data against the file inventory to surface actionable curation recommendations (never-referenced files, expand-depth candidates, low-utilization content, stale high-use files).
+**Goal:** Add a `--recommendations` flag to `check_knowledge_base.py` that cross-references utilization data against the file inventory to surface actionable curation recommendations (never-referenced files, expand-depth candidates, low-utilization content, stale high-use files).
 
-**Architecture:** New `generate_recommendations()` function in `check_kb.py` reads `read_utilization()` for per-file read counts and `_discover_md_files()` for the current inventory. Files are grouped by area, classified into recommendation categories, and returned as `list[dict]`. Configurable `--min-reads` and `--min-days` thresholds gate output to avoid noisy recommendations from sparse data.
+**Architecture:** New `generate_recommendations()` function in `check_knowledge_base.py` reads `read_utilization()` for per-file read counts and `_discover_md_files()` for the current inventory. Files are grouped by area, classified into recommendation categories, and returned as `list[dict]`. Configurable `--min-reads` and `--min-days` thresholds gate output to avoid noisy recommendations from sparse data.
 
 **Tech Stack:** Python 3.9+ stdlib only. unittest.TestCase. No external dependencies.
 
@@ -16,7 +16,7 @@
 
 **Files:**
 - Create: `tests/skills/health/test_recommendations.py`
-- Modify: `dewey/skills/health/scripts/check_kb.py`
+- Modify: `dewey/skills/health/scripts/check_knowledge_base.py`
 
 **Step 1: Write the failing tests**
 
@@ -32,7 +32,7 @@ import unittest
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from check_kb import generate_recommendations
+from check_knowledge_base import generate_recommendations
 
 
 def _write(path: Path, text: str) -> Path:
@@ -85,9 +85,9 @@ def _log_entry(file: str, timestamp: str, context: str = "hook") -> str:
     return json.dumps({"file": file, "timestamp": timestamp, "context": context})
 
 
-def _write_utilization_log(kb_root: Path, entries: list[str]) -> None:
+def _write_utilization_log(knowledge_base_root: Path, entries: list[str]) -> None:
     """Write utilization log entries to .dewey/utilization/log.jsonl."""
-    log_dir = kb_root / ".dewey" / "utilization"
+    log_dir = knowledge_base_root / ".dewey" / "utilization"
     log_dir.mkdir(parents=True, exist_ok=True)
     (log_dir / "log.jsonl").write_text("\n".join(entries) + "\n")
 
@@ -402,15 +402,15 @@ if __name__ == "__main__":
 **Step 2: Run tests to verify they fail**
 
 Run: `python3 -m pytest tests/skills/health/test_recommendations.py -v`
-Expected: FAIL with `ImportError: cannot import name 'generate_recommendations' from 'check_kb'`
+Expected: FAIL with `ImportError: cannot import name 'generate_recommendations' from 'check_knowledge_base'`
 
 **Step 3: Write the implementation**
 
-Add to `dewey/skills/health/scripts/check_kb.py`, before the `if __name__` block:
+Add to `dewey/skills/health/scripts/check_knowledge_base.py`, before the `if __name__` block:
 
 ```python
 def generate_recommendations(
-    kb_root: Path,
+    knowledge_base_root: Path,
     min_reads: int = 10,
     min_days: int = 7,
 ) -> dict:
@@ -422,7 +422,7 @@ def generate_recommendations(
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory containing the knowledge base.
     min_reads:
         Minimum total reads across all files before recommendations
@@ -441,11 +441,11 @@ def generate_recommendations(
     from utilization import read_utilization
     from validators import check_freshness, parse_frontmatter
 
-    knowledge_dir_name = read_knowledge_dir(kb_root)
-    md_files = _discover_md_files(kb_root, knowledge_dir_name)
-    knowledge_dir = kb_root / knowledge_dir_name
+    knowledge_dir_name = read_knowledge_dir(knowledge_base_root)
+    md_files = _discover_md_files(knowledge_base_root, knowledge_dir_name)
+    knowledge_dir = knowledge_base_root / knowledge_dir_name
 
-    # Build file paths relative to kb_root (with knowledge_dir prefix)
+    # Build file paths relative to knowledge_base_root (with knowledge_dir prefix)
     file_paths = {}
     for f in md_files:
         rel_to_kd = str(f.relative_to(knowledge_dir))
@@ -453,7 +453,7 @@ def generate_recommendations(
         file_paths[rel_to_root] = f
 
     # Read utilization data
-    utilization = read_utilization(kb_root)
+    utilization = read_utilization(knowledge_base_root)
 
     # --- Gating ---
     total_reads = sum(entry["count"] for entry in utilization.values())
@@ -673,7 +673,7 @@ Expected: All pass, no regressions
 **Step 6: Commit**
 
 ```bash
-git add dewey/skills/health/scripts/check_kb.py tests/skills/health/test_recommendations.py
+git add dewey/skills/health/scripts/check_knowledge_base.py tests/skills/health/test_recommendations.py
 git commit -m "Add generate_recommendations for utilization-driven curation suggestions"
 ```
 
@@ -682,7 +682,7 @@ git commit -m "Add generate_recommendations for utilization-driven curation sugg
 ### Task 2: CLI integration — `--recommendations` flag
 
 **Files:**
-- Modify: `dewey/skills/health/scripts/check_kb.py:220-248` (the `if __name__` block)
+- Modify: `dewey/skills/health/scripts/check_knowledge_base.py:220-248` (the `if __name__` block)
 
 **Step 1: Write the failing test**
 
@@ -708,8 +708,8 @@ class TestCLI(unittest.TestCase):
 
     def _run(self, *extra_args) -> subprocess.CompletedProcess:
         script = Path(__file__).resolve().parent.parent.parent.parent / \
-            "dewey" / "skills" / "health" / "scripts" / "check_kb.py"
-        cmd = ["python3", str(script), "--kb-root", str(self.tmpdir)]
+            "dewey" / "skills" / "health" / "scripts" / "check_knowledge_base.py"
+        cmd = ["python3", str(script), "--knowledge-base-root", str(self.tmpdir)]
         cmd.extend(extra_args)
         return subprocess.run(cmd, capture_output=True, text=True, timeout=10)
 
@@ -777,7 +777,7 @@ Expected: FAIL — `--recommendations` flag not recognized
 
 **Step 3: Update the CLI block**
 
-Replace the `if __name__ == "__main__"` block in `dewey/skills/health/scripts/check_kb.py`:
+Replace the `if __name__ == "__main__"` block in `dewey/skills/health/scripts/check_knowledge_base.py`:
 
 ```python
 if __name__ == "__main__":
@@ -785,7 +785,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Run knowledge base health checks.")
     parser.add_argument(
-        "--kb-root",
+        "--knowledge-base-root",
         required=True,
         help="Root directory containing the docs/ folder.",
     )
@@ -818,7 +818,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    kb_path = Path(args.kb_root)
+    kb_path = Path(args.knowledge_base_root)
 
     if args.both and args.recommendations:
         report = run_combined_report(kb_path)
@@ -851,7 +851,7 @@ Expected: All pass, no regressions
 **Step 6: Commit**
 
 ```bash
-git add dewey/skills/health/scripts/check_kb.py tests/skills/health/test_recommendations.py
+git add dewey/skills/health/scripts/check_knowledge_base.py tests/skills/health/test_recommendations.py
 git commit -m "Add --recommendations CLI flag with --min-reads and --min-days thresholds"
 ```
 
@@ -866,17 +866,17 @@ Expected: ALL PASS
 
 **Step 2: Test against sandbox with zero thresholds**
 
-Run: `python3 dewey/skills/health/scripts/check_kb.py --kb-root sandbox --recommendations --min-reads 0 --min-days 0`
+Run: `python3 dewey/skills/health/scripts/check_knowledge_base.py --knowledge-base-root sandbox --recommendations --min-reads 0 --min-days 0`
 Expected: JSON with recommendations (likely many `never_referenced` since utilization data is sparse). Verify output has `recommendations` list and `summary` with `by_category`.
 
 **Step 3: Test combined output**
 
-Run: `python3 dewey/skills/health/scripts/check_kb.py --kb-root sandbox --both --recommendations --min-reads 0 --min-days 0`
+Run: `python3 dewey/skills/health/scripts/check_knowledge_base.py --knowledge-base-root sandbox --both --recommendations --min-reads 0 --min-days 0`
 Expected: JSON with `tier1`, `tier2`, and `recommendations` keys.
 
 **Step 4: Test default thresholds gate correctly**
 
-Run: `python3 dewey/skills/health/scripts/check_kb.py --kb-root sandbox --recommendations`
+Run: `python3 dewey/skills/health/scripts/check_knowledge_base.py --knowledge-base-root sandbox --recommendations`
 Expected: JSON with `skipped` key (sandbox only has 3 reads over 0 days, well below defaults).
 
 **Step 5: Commit if any adjustments needed**

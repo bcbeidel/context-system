@@ -36,10 +36,10 @@ The Tier 2 pre-screener runs 9 deterministic triggers on each file and returns a
 Before assessing queue items, review these reference verdicts to ensure consistent thresholds across all evaluations:
 
 **source_drift — Flag:**
-The source URL has been updated with new API endpoints, changed pricing tiers, or deprecated features not reflected in the KB entry. The KB makes claims the source no longer supports.
+The source URL has been updated with new API endpoints, changed pricing tiers, or deprecated features not reflected in the knowledge-base entry. The knowledge-base entry makes claims the source no longer supports.
 
 **source_drift — OK:**
-Minor wording changes or page redesign, but the substantive claims and recommendations in the KB still align with the source content.
+Minor wording changes or page redesign, but the substantive claims and recommendations in the knowledge-base entry still align with the source content.
 
 **depth_accuracy — Flag:**
 A working-depth file where "In Practice" contains only bold-header + 2-bullet enumeration lists (no scenarios, worked examples, or code). Reads as a reference checklist rather than actionable working guidance.

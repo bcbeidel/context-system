@@ -12,7 +12,7 @@ Dewey currently runs as a Claude Code plugin. The knowledge base output format i
 
 | Skill | Purpose |
 |-------|---------|
-| `/dewey:curate` | Single entry point for all KB content operations: discover domains, scaffold structure, add/update topics, ingest URLs, manage proposals and curation plan |
+| `/dewey:curate` | Single entry point for all knowledge-base content operations: discover domains, scaffold structure, add/update topics, ingest URLs, manage proposals and curation plan |
 | `/dewey:health` | Validate quality, check freshness, analyze coverage gaps, generate reports |
 
 ### `/dewey:curate`
@@ -124,15 +124,15 @@ python3 -m pytest tests/ -v
 dewey/
   .claude-plugin/plugin.json         # Plugin manifest
   skills/
-    curate/                           # All KB content operations
+    curate/                           # All knowledge-base content operations
       SKILL.md
       scripts/create_topic.py, propose.py, promote.py, scaffold.py, templates.py, config.py
       workflows/curate-discover.md, curate-setup.md, curate-add.md, curate-propose.md,
                curate-promote.md, curate-ingest.md, curate-plan.md
-      references/kb-spec-summary.md, source-evaluation.md
+      references/knowledge-base-spec-summary.md, source-evaluation.md
     health/                           # Quality validation
       SKILL.md
-      scripts/validators.py, cross_validators.py, auto_fix.py, check_kb.py,
+      scripts/validators.py, cross_validators.py, auto_fix.py, check_knowledge_base.py,
               tier2_triggers.py, history.py, utilization.py, log_access.py
       workflows/health-check.md, health-audit.md, health-review.md,
                health-coverage.md, health-freshness.md
@@ -162,5 +162,5 @@ tests/                                # Test suite (483 tests)
 ## Documentation
 
 - [Knowledge Base Specification](docs/plans/2026-02-14-knowledge-base-spec-design.md) -- The full design spec
-- [Implementation Plan](docs/plans/2026-02-14-kb-skills-implementation.md) -- How the skills were built (completed)
+- [Implementation Plan](docs/plans/2026-02-14-knowledge-base-skills-implementation.md) -- How the skills were built (completed)
 - [Curate Redesign](docs/plans/2026-02-15-curate-redesign.md) -- Consolidation of explore/init/curate into a single skill

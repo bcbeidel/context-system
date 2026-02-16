@@ -1,7 +1,7 @@
 """Topic reference tracking.
 
-Records when KB files are referenced to ``.dewey/utilization/log.jsonl``
-inside the KB root.  This data feeds into utilization-aware health scoring
+Records when knowledge-base files are referenced to ``.dewey/utilization/log.jsonl``
+inside the knowledge-base root.  This data feeds into utilization-aware health scoring
 and curation recommendations.
 
 Only stdlib is used.

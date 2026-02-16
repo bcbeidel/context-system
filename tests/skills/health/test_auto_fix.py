@@ -1,4 +1,4 @@
-"""Tests for skills.health.scripts.auto_fix — auto-fix for common KB issues."""
+"""Tests for skills.health.scripts.auto_fix — auto-fix for common knowledge-base issues."""
 
 import shutil
 import tempfile

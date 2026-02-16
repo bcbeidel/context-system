@@ -129,7 +129,7 @@ class TestRunHealthCheck(unittest.TestCase):
     # test_clean_kb_has_no_failures
     # ------------------------------------------------------------------
     def test_clean_kb_has_no_failures(self):
-        """A valid KB produces zero fail-severity issues."""
+        """A valid knowledge base produces zero fail-severity issues."""
         area = self.knowledge_base / "area-one"
         area.mkdir()
         _write(area / "overview.md", _valid_md("overview"))
@@ -716,7 +716,7 @@ class TestAutoFixIntegration(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def _make_incomplete_kb(self):
-        """Create a KB with a working file missing sections."""
+        """Create a knowledge base with a working file missing sections."""
         area = self.knowledge_base / "area"
         area.mkdir()
         _write(area / "overview.md", _valid_md("overview"))
@@ -848,7 +848,7 @@ class TestCrossValidatorSkip(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def test_clean_kb_still_passes_without_manifests(self):
-        """Clean KB with no AGENTS.md/CLAUDE.md/plan still has zero fails."""
+        """Clean knowledge base with no AGENTS.md/CLAUDE.md/plan still has zero fails."""
         area = self.knowledge_base / "area-one"
         area.mkdir()
         _write(area / "overview.md", _valid_md("overview"))
@@ -933,7 +933,7 @@ class TestNamingConventionsIntegration(unittest.TestCase):
 
 
 class TestCleanKnowledgeBaseStillPasses(unittest.TestCase):
-    """Ensure new validators don't break clean KB."""
+    """Ensure new validators don't break clean knowledge base."""
 
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
@@ -944,7 +944,7 @@ class TestCleanKnowledgeBaseStillPasses(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def test_clean_kb_no_fails_with_new_validators(self):
-        """A valid KB produces zero fail-severity issues with all new validators active."""
+        """A valid knowledge base produces zero fail-severity issues with all new validators active."""
         area = self.knowledge_base / "area-one"
         area.mkdir()
         _write(area / "overview.md", _valid_md("overview"))

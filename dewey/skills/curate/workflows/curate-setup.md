@@ -3,7 +3,7 @@ Evaluate the repo, understand the user's goals, scaffold a knowledge base, build
 </objective>
 
 <required_reading>
-Load `${CLAUDE_PLUGIN_ROOT}/skills/curate/references/kb-spec-summary.md` for context on the knowledge base specification.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/curate/references/knowledge-base-spec-summary.md` for context on the knowledge base specification.
 </required_reading>
 
 <process>
@@ -108,7 +108,7 @@ last_updated: <today's date YYYY-MM-DD>
 
 If the user expressed a specific curation intent before setup began (e.g., "add a topic about X"), resume by routing to the appropriate curate workflow with that context. The intake classifier already identified their intent — carry it through.
 
-If no specific intent was expressed (user just wanted to set up the KB), present the curation plan and ask: "What would you like to work on first?"
+If no specific intent was expressed (user just wanted to set up the knowledge base), present the curation plan and ask: "What would you like to work on first?"
 </process>
 
 <success_criteria>

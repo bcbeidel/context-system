@@ -38,10 +38,10 @@ git commit -m "Add CLAUDE.md and Tier 2 audit polish design doc"
 
 ### Task 2: Add `--tier2` output format test
 
-Verify that `check_kb.py --tier2` produces well-structured output that the audit workflow can consume. The function exists and is lightly tested, but we need to validate the output schema more rigorously.
+Verify that `check_knowledge_base.py --tier2` produces well-structured output that the audit workflow can consume. The function exists and is lightly tested, but we need to validate the output schema more rigorously.
 
 **Files:**
-- Modify: `tests/skills/health/test_check_kb.py`
+- Modify: `tests/skills/health/test_check_knowledge_base.py`
 
 **Step 1: Write the failing test**
 
@@ -143,25 +143,25 @@ class TestTier2OutputSchema(unittest.TestCase):
 
 These tests validate existing behavior, so they should pass immediately.
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestTier2OutputSchema -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestTier2OutputSchema -v`
 Expected: 3 passed
 
 **Step 3: Commit**
 
 ```bash
-git add tests/skills/health/test_check_kb.py
+git add tests/skills/health/test_check_knowledge_base.py
 git commit -m "Add Tier 2 output schema validation tests"
 ```
 
 ---
 
-### Task 3: Add `--both` flag to check_kb.py for combined Tier 1 + Tier 2 output
+### Task 3: Add `--both` flag to check_knowledge_base.py for combined Tier 1 + Tier 2 output
 
 The audit workflow needs both Tier 1 and Tier 2 results. Currently these require two separate invocations. Add a `--both` flag that returns a combined report.
 
 **Files:**
-- Modify: `dewey/skills/health/scripts/check_kb.py`
-- Modify: `tests/skills/health/test_check_kb.py`
+- Modify: `dewey/skills/health/scripts/check_knowledge_base.py`
+- Modify: `tests/skills/health/test_check_knowledge_base.py`
 
 **Step 1: Write the failing test**
 
@@ -207,20 +207,20 @@ class TestRunCombinedReport(unittest.TestCase):
 
 **Step 2: Run tests to verify they fail**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestRunCombinedReport -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestRunCombinedReport -v`
 Expected: FAIL with `ImportError` (function doesn't exist yet)
 
 **Step 3: Write minimal implementation**
 
-Add to `check_kb.py`:
+Add to `check_knowledge_base.py`:
 
 ```python
-def run_combined_report(kb_root: Path) -> dict:
+def run_combined_report(knowledge_base_root: Path) -> dict:
     """Run Tier 1 + Tier 2 pre-screening and return a combined report.
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory containing the knowledge base folder.
 
     Returns
@@ -229,8 +229,8 @@ def run_combined_report(kb_root: Path) -> dict:
         ``{"tier1": {...}, "tier2": {...}}``
     """
     return {
-        "tier1": run_health_check(kb_root),
-        "tier2": run_tier2_prescreening(kb_root),
+        "tier1": run_health_check(knowledge_base_root),
+        "tier2": run_tier2_prescreening(knowledge_base_root),
     }
 ```
 
@@ -257,21 +257,21 @@ else:
 
 **Step 4: Update import in test file**
 
-Add `run_combined_report` to the import line in `test_check_kb.py`:
+Add `run_combined_report` to the import line in `test_check_knowledge_base.py`:
 
 ```python
-from check_kb import run_health_check, run_tier2_prescreening, run_combined_report
+from check_knowledge_base import run_health_check, run_tier2_prescreening, run_combined_report
 ```
 
 **Step 5: Run tests to verify they pass**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py -v`
 Expected: All tests pass (existing + 3 new)
 
 **Step 6: Commit**
 
 ```bash
-git add dewey/skills/health/scripts/check_kb.py tests/skills/health/test_check_kb.py
+git add dewey/skills/health/scripts/check_knowledge_base.py tests/skills/health/test_check_knowledge_base.py
 git commit -m "Add combined Tier 1 + Tier 2 report function and --both flag"
 ```
 
@@ -290,7 +290,7 @@ Read `dewey/skills/health/workflows/health-audit.md` to see current Steps 1 and 
 
 **Step 2: Update Steps 1 and 2 to use --both**
 
-Replace the two separate invocations (Step 1: `--kb-root`, Step 2: `--kb-root --tier2`) with a single combined invocation. Keep the Step 2 trigger summary table. Merge Steps 1 and 2 into a single Step 1 that runs `--both` and presents both summaries.
+Replace the two separate invocations (Step 1: `--knowledge-base-root`, Step 2: `--knowledge-base-root --tier2`) with a single combined invocation. Keep the Step 2 trigger summary table. Merge Steps 1 and 2 into a single Step 1 that runs `--both` and presents both summaries.
 
 Update Step 1 to:
 
@@ -298,7 +298,7 @@ Update Step 1 to:
 ## Step 1: Run Tier 1 checks and Tier 2 pre-screening
 
 \`\`\`bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_kb.py --kb-root <kb_root> --both
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_knowledge_base.py --knowledge-base-root <knowledge_base_root> --both
 \`\`\`
 
 Capture the JSON output. It contains two sections:
@@ -367,7 +367,7 @@ After the existing `--tier2` usage example, add:
 ```markdown
 **Combined Tier 1 + Tier 2:**
 \`\`\`bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_kb.py --kb-root <kb_root> --both
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_knowledge_base.py --knowledge-base-root <knowledge_base_root> --both
 \`\`\`
 
 Returns `{"tier1": {...}, "tier2": {...}}` with both Tier 1 issues/summary and Tier 2 queue/summary.
@@ -400,9 +400,9 @@ git commit -m "Document Tier 2 triggers and --both flag in SKILL.md"
 
 ---
 
-### Task 6: End-to-end validation against sandbox KB
+### Task 6: End-to-end validation against sandbox knowledge base
 
-Run the full audit workflow manually against the sandbox KB to validate the end-to-end flow.
+Run the full audit workflow manually against the sandbox knowledge base to validate the end-to-end flow.
 
 **Files:**
 - No files created or modified (validation only)
@@ -410,7 +410,7 @@ Run the full audit workflow manually against the sandbox KB to validate the end-
 **Step 1: Run the combined report**
 
 ```bash
-python3 dewey/skills/health/scripts/check_kb.py --kb-root sandbox --both
+python3 dewey/skills/health/scripts/check_knowledge_base.py --knowledge-base-root sandbox --both
 ```
 
 Verify the output contains both `tier1` and `tier2` sections with correct structure.

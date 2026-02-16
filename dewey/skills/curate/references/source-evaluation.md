@@ -172,7 +172,7 @@ Map source agreement directly to confidence language in the draft.
 | Weak consensus | 30-50% agree | Use "some evidence suggests" | "Some evidence suggests that async pooling outperforms sync pooling under high load." |
 | No consensus | <30% agree | Present competing views or omit | "Practitioners disagree on optimal pool sizing strategy: some recommend fixed pools while others advocate dynamic sizing." |
 
-**Important:** When consensus is weak or absent, this is signal -- not failure. It means the topic has genuine uncertainty that the KB entry should reflect honestly.
+**Important:** When consensus is weak or absent, this is signal -- not failure. It means the topic has genuine uncertainty that the knowledge-base entry should reflect honestly.
 
 ## Edge Cases
 

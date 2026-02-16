@@ -1,6 +1,6 @@
 """Cross-file consistency validators for knowledge-base health checks.
 
-Operates on the KB as a whole rather than individual files.  Checks
+Operates on the knowledge base as a whole rather than individual files.  Checks
 manifest sync (AGENTS.md / CLAUDE.md), curation plan sync, proposal
 integrity, and the internal link graph.
 

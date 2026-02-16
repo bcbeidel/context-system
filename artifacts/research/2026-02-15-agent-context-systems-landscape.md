@@ -140,7 +140,7 @@ Individual knowledge tools with AI features.
       Qdrant             |    Obsidian (Markdown vault)       |      Cornerstone
       Milvus             |                                    |      Axonify
                          |    *** DEWEY SITS HERE ***         |      RemNote/Anki
-    Agent Memory         |    (curated KB in repo,            |
+    Agent Memory         |    (curated knowledge base in repo,            |
       Cognee             |     quality validation,            |    KM Walled Gardens
       Anthropic Memory   |     progressive disclosure,        |      Glean
       GraphRAG           |     human + agent audience)        |      Mem.ai

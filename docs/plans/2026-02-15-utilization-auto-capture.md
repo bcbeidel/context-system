@@ -93,7 +93,7 @@ class TestLogIfKnowledgeFile(unittest.TestCase):
         self.assertEqual(entry["context"], "hook")
 
     def test_stores_relative_path(self):
-        """Logged file path should be relative to kb_root, not absolute."""
+        """Logged file path should be relative to knowledge_base_root, not absolute."""
         topic = self.kb_dir / "area" / "topic.md"
         topic.parent.mkdir(parents=True)
         topic.write_text("content")
@@ -157,12 +157,12 @@ from config import read_knowledge_dir
 from utilization import record_reference
 
 
-def log_if_knowledge_file(kb_root: Path, file_path: str) -> bool:
+def log_if_knowledge_file(knowledge_base_root: Path, file_path: str) -> bool:
     """Log a utilization event if *file_path* is a knowledge base topic.
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory of the knowledge base.
     file_path:
         Absolute path to the file that was read.
@@ -180,8 +180,8 @@ def log_if_knowledge_file(kb_root: Path, file_path: str) -> bool:
     if not path.exists():
         return False
 
-    knowledge_dir_name = read_knowledge_dir(kb_root)
-    knowledge_dir = (kb_root / knowledge_dir_name).resolve()
+    knowledge_dir_name = read_knowledge_dir(knowledge_base_root)
+    knowledge_dir = (knowledge_base_root / knowledge_dir_name).resolve()
 
     try:
         rel = path.resolve().relative_to(knowledge_dir)
@@ -193,7 +193,7 @@ def log_if_knowledge_file(kb_root: Path, file_path: str) -> bool:
         return False
 
     relative_path = f"{knowledge_dir_name}/{rel}"
-    record_reference(kb_root, relative_path, context="hook")
+    record_reference(knowledge_base_root, relative_path, context="hook")
     return True
 ```
 
@@ -218,7 +218,7 @@ git commit -m "Add log_access.py for hook-driven utilization capture"
 
 ### Task 2: Create the hook entry-point script
 
-The Claude Code hook runs a shell command. We need a thin CLI wrapper that resolves the KB root and calls `log_if_knowledge_file`. This script lives at the KB project level (not inside the plugin), because hooks are configured per-project.
+The Claude Code hook runs a shell command. We need a thin CLI wrapper that resolves the knowledge-base root and calls `log_if_knowledge_file`. This script lives at the knowledge-base project level (not inside the plugin), because hooks are configured per-project.
 
 The hook receives tool input as JSON on stdin. For the `Read` tool, this includes `{"file_path": "..."}`.
 
@@ -241,7 +241,7 @@ class TestHookEntryPoint(unittest.TestCase):
         self.tmpdir = Path(tempfile.mkdtemp())
         self.kb_dir = self.tmpdir / "docs"
         self.kb_dir.mkdir()
-        # Create AGENTS.md so the script can find KB root
+        # Create AGENTS.md so the script can find knowledge-base root
         (self.tmpdir / "AGENTS.md").write_text("# Role\n")
 
     def tearDown(self):
@@ -252,7 +252,7 @@ class TestHookEntryPoint(unittest.TestCase):
         script = Path(__file__).resolve().parent.parent.parent.parent / \
             "dewey" / "skills" / "health" / "scripts" / "hook_log_access.py"
         return subprocess.run(
-            ["python3", str(script), "--kb-root", str(self.tmpdir)],
+            ["python3", str(script), "--knowledge-base-root", str(self.tmpdir)],
             input=json.dumps(tool_input),
             capture_output=True,
             text=True,
@@ -286,7 +286,7 @@ class TestHookEntryPoint(unittest.TestCase):
         script = Path(__file__).resolve().parent.parent.parent.parent / \
             "dewey" / "skills" / "health" / "scripts" / "hook_log_access.py"
         result = subprocess.run(
-            ["python3", str(script), "--kb-root", str(self.tmpdir)],
+            ["python3", str(script), "--knowledge-base-root", str(self.tmpdir)],
             input="not json",
             capture_output=True,
             text=True,
@@ -316,7 +316,7 @@ Usage in .claude/hooks.json:
                 "matcher": "Read",
                 "hooks": [{
                     "type": "command",
-                    "command": "python3 <plugin_root>/skills/health/scripts/hook_log_access.py --kb-root <kb_root>"
+                    "command": "python3 <plugin_root>/skills/health/scripts/hook_log_access.py --knowledge-base-root <knowledge_base_root>"
                 }]
             }]
         }
@@ -347,7 +347,7 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kb-root", required=True)
+    parser.add_argument("--knowledge-base-root", required=True)
     args = parser.parse_args()
 
     try:
@@ -359,7 +359,7 @@ def main() -> None:
     if not file_path:
         return
 
-    log_if_knowledge_file(Path(args.kb_root), file_path)
+    log_if_knowledge_file(Path(args.knowledge_base_root), file_path)
 
 
 if __name__ == "__main__":
@@ -387,7 +387,7 @@ git commit -m "Add hook entry point for PostToolUse Read utilization tracking"
 
 ### Task 3: Generate hooks.json during /dewey:init
 
-When `/dewey:init` scaffolds a KB, it should also create `.claude/hooks.json` with the PostToolUse hook configured. This way every new KB automatically gets utilization tracking.
+When `/dewey:init` scaffolds a knowledge base, it should also create `.claude/hooks.json` with the PostToolUse hook configured. This way every new knowledge base automatically gets utilization tracking.
 
 **Files:**
 - Modify: `dewey/skills/init/scripts/scaffold.py`
@@ -402,23 +402,23 @@ Add to `test_templates.py`:
 ```python
 class TestRenderHooksJson(unittest.TestCase):
     def test_returns_valid_json(self):
-        result = render_hooks_json(plugin_root="/path/to/plugin", kb_root="/path/to/kb")
+        result = render_hooks_json(plugin_root="/path/to/plugin", knowledge_base_root="/path/to/kb")
         parsed = json.loads(result)
         self.assertIn("hooks", parsed)
 
     def test_contains_post_tool_use(self):
-        result = render_hooks_json(plugin_root="/path/to/plugin", kb_root="/path/to/kb")
+        result = render_hooks_json(plugin_root="/path/to/plugin", knowledge_base_root="/path/to/kb")
         parsed = json.loads(result)
         self.assertIn("PostToolUse", parsed["hooks"])
 
     def test_matcher_is_read(self):
-        result = render_hooks_json(plugin_root="/path/to/plugin", kb_root="/path/to/kb")
+        result = render_hooks_json(plugin_root="/path/to/plugin", knowledge_base_root="/path/to/kb")
         parsed = json.loads(result)
         hook_group = parsed["hooks"]["PostToolUse"][0]
         self.assertEqual(hook_group["matcher"], "Read")
 
     def test_command_references_script(self):
-        result = render_hooks_json(plugin_root="/path/to/plugin", kb_root="/path/to/kb")
+        result = render_hooks_json(plugin_root="/path/to/plugin", knowledge_base_root="/path/to/kb")
         parsed = json.loads(result)
         command = parsed["hooks"]["PostToolUse"][0]["hooks"][0]["command"]
         self.assertIn("hook_log_access.py", command)
@@ -435,7 +435,7 @@ Expected: FAIL with `ImportError`
 Add to `templates.py`:
 
 ```python
-def render_hooks_json(plugin_root: str, kb_root: str) -> str:
+def render_hooks_json(plugin_root: str, knowledge_base_root: str) -> str:
     """Render .claude/hooks.json for utilization tracking."""
     script_path = f"{plugin_root}/skills/health/scripts/hook_log_access.py"
     hooks = {
@@ -446,7 +446,7 @@ def render_hooks_json(plugin_root: str, kb_root: str) -> str:
                     "hooks": [
                         {
                             "type": "command",
-                            "command": f"python3 {script_path} --kb-root {kb_root}",
+                            "command": f"python3 {script_path} --knowledge-base-root {knowledge_base_root}",
                         }
                     ],
                 }
@@ -501,7 +501,7 @@ Add entry for `log_access.py` and `hook_log_access.py`:
 
 ```markdown
 **log_access.py** -- Hook-driven utilization logging
-- `log_if_knowledge_file(kb_root, file_path)` -- Logs access if file is a .md under the knowledge directory
+- `log_if_knowledge_file(knowledge_base_root, file_path)` -- Logs access if file is a .md under the knowledge directory
 - Filters out _proposals, non-.md files, and files outside the knowledge directory
 - Called by `hook_log_access.py` (Claude Code PostToolUse hook entry point)
 
@@ -537,7 +537,7 @@ Simulate the hook by piping Read tool input to the script:
 
 ```bash
 echo '{"file_path": "/path/to/sandbox/docs/code-quality/naming-conventions.md"}' | \
-    python3 dewey/skills/health/scripts/hook_log_access.py --kb-root sandbox
+    python3 dewey/skills/health/scripts/hook_log_access.py --knowledge-base-root sandbox
 cat sandbox/.dewey/utilization/log.jsonl
 ```
 

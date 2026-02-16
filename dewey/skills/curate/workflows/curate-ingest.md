@@ -23,7 +23,7 @@ Read AGENTS.md to understand the role context, then fetch the URL:
 
 ## Step 3: Evaluate the ingested source
 
-Before checking KB overlap, evaluate the ingested URL itself. Consult `@dewey/skills/curate/references/source-evaluation.md` for full methodology details.
+Before checking knowledge-base overlap, evaluate the ingested URL itself. Consult `@dewey/skills/curate/references/source-evaluation.md` for full methodology details.
 
 1. **Apply SIFT lateral reading:** Leave the source, search what others say about it and its author/organization.
 2. **Score on five dimensions** (1-5 scale):

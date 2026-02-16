@@ -4,7 +4,7 @@
 
 **Goal:** Add health score history (baselines over time) and utilization tracking (which topics get referenced) to the Dewey health skill.
 
-**Architecture:** Two new stdlib-only Python modules (`history.py`, `utilization.py`) with append-only JSONL storage in `.dewey/history/` and `.dewey/utilization/`. Integrated into `check_kb.py` (auto-snapshot) and health workflows (reference tracking, trend display).
+**Architecture:** Two new stdlib-only Python modules (`history.py`, `utilization.py`) with append-only JSONL storage in `.dewey/history/` and `.dewey/utilization/`. Integrated into `check_knowledge_base.py` (auto-snapshot) and health workflows (reference tracking, trend display).
 
 **Tech Stack:** Python 3.9+ (stdlib only), JSONL files, unittest
 
@@ -145,7 +145,7 @@ from typing import Optional
 
 
 def record_snapshot(
-    kb_root: Path,
+    knowledge_base_root: Path,
     tier1_summary: dict,
     tier2_summary: Optional[dict] = None,
 ) -> Path:
@@ -153,7 +153,7 @@ def record_snapshot(
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory of the knowledge base.
     tier1_summary:
         Summary dict from ``run_health_check``.
@@ -165,7 +165,7 @@ def record_snapshot(
     Path
         Path to the log file.
     """
-    log_dir = kb_root / ".dewey" / "history"
+    log_dir = knowledge_base_root / ".dewey" / "history"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "health-log.jsonl"
 
@@ -267,12 +267,12 @@ Expected: FAIL (function exists from import but not implemented)
 Add to `history.py`:
 
 ```python
-def read_history(kb_root: Path, limit: int = 10) -> list[dict]:
+def read_history(knowledge_base_root: Path, limit: int = 10) -> list[dict]:
     """Read the last *limit* health check snapshots.
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory of the knowledge base.
     limit:
         Maximum number of snapshots to return.
@@ -282,7 +282,7 @@ def read_history(kb_root: Path, limit: int = 10) -> list[dict]:
     list[dict]
         Snapshots in chronological order (oldest first).
     """
-    log_file = kb_root / ".dewey" / "history" / "health-log.jsonl"
+    log_file = knowledge_base_root / ".dewey" / "history" / "health-log.jsonl"
     if not log_file.exists():
         return []
 
@@ -417,7 +417,7 @@ from pathlib import Path
 
 
 def record_reference(
-    kb_root: Path,
+    knowledge_base_root: Path,
     file_path: str,
     context: str = "user",
 ) -> Path:
@@ -425,7 +425,7 @@ def record_reference(
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory of the knowledge base.
     file_path:
         Relative path to the referenced file (e.g. ``docs/topic.md``).
@@ -437,7 +437,7 @@ def record_reference(
     Path
         Path to the log file.
     """
-    log_dir = kb_root / ".dewey" / "utilization"
+    log_dir = knowledge_base_root / ".dewey" / "utilization"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "log.jsonl"
 
@@ -548,12 +548,12 @@ Expected: FAIL
 Add to `utilization.py`:
 
 ```python
-def read_utilization(kb_root: Path) -> dict[str, dict]:
+def read_utilization(knowledge_base_root: Path) -> dict[str, dict]:
     """Read utilization stats per file.
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory of the knowledge base.
 
     Returns
@@ -562,7 +562,7 @@ def read_utilization(kb_root: Path) -> dict[str, dict]:
         Mapping of file path to ``{"count": int,
         "first_referenced": str, "last_referenced": str}``.
     """
-    log_file = kb_root / ".dewey" / "utilization" / "log.jsonl"
+    log_file = knowledge_base_root / ".dewey" / "utilization" / "log.jsonl"
     if not log_file.exists():
         return {}
 
@@ -606,17 +606,17 @@ git commit -m "Add read_utilization for per-file reference stats"
 
 ---
 
-### Task 5: Integrate history snapshots into check_kb.py
+### Task 5: Integrate history snapshots into check_knowledge_base.py
 
 Auto-persist a snapshot after each health check run.
 
 **Files:**
-- Modify: `dewey/skills/health/scripts/check_kb.py`
-- Modify: `tests/skills/health/test_check_kb.py`
+- Modify: `dewey/skills/health/scripts/check_knowledge_base.py`
+- Modify: `tests/skills/health/test_check_knowledge_base.py`
 
 **Step 1: Write the failing test**
 
-Add to `test_check_kb.py`:
+Add to `test_check_knowledge_base.py`:
 
 ```python
 class TestHistoryIntegration(unittest.TestCase):
@@ -669,12 +669,12 @@ class TestHistoryIntegration(unittest.TestCase):
 
 **Step 2: Run tests to verify they fail**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestHistoryIntegration -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestHistoryIntegration -v`
 Expected: FAIL (no snapshot is written yet)
 
 **Step 3: Implement the integration**
 
-Add import to `check_kb.py`:
+Add import to `check_knowledge_base.py`:
 ```python
 from history import record_snapshot
 ```
@@ -684,7 +684,7 @@ Add `import json` to test file if not already there.
 Add snapshot call at end of `run_health_check`:
 ```python
     # Persist history snapshot
-    record_snapshot(kb_root, result["summary"], None)
+    record_snapshot(knowledge_base_root, result["summary"], None)
 
     return result
 ```
@@ -695,7 +695,7 @@ Where `result` is the dict being returned. Restructure slightly — assign to va
         "issues": all_issues,
         "summary": { ... },
     }
-    record_snapshot(kb_root, result["summary"], None)
+    record_snapshot(knowledge_base_root, result["summary"], None)
     return result
 ```
 
@@ -705,49 +705,49 @@ Add snapshot call at end of `run_tier2_prescreening`:
         "queue": queue,
         "summary": { ... },
     }
-    record_snapshot(kb_root, None, result["summary"])
+    record_snapshot(knowledge_base_root, None, result["summary"])
     return result
 ```
 
 Add snapshot call at end of `run_combined_report`:
 ```python
     result = {
-        "tier1": run_health_check(kb_root),
-        "tier2": run_tier2_prescreening(kb_root),
+        "tier1": run_health_check(knowledge_base_root),
+        "tier2": run_tier2_prescreening(knowledge_base_root),
     }
     # run_health_check and run_tier2_prescreening each persist their own snapshots.
     # The combined report persists a combined snapshot too.
-    record_snapshot(kb_root, result["tier1"]["summary"], result["tier2"]["summary"])
+    record_snapshot(knowledge_base_root, result["tier1"]["summary"], result["tier2"]["summary"])
     return result
 ```
 
 **Important:** `run_health_check` and `run_tier2_prescreening` will each write their own snapshot. When `run_combined_report` calls both, that would create 3 snapshots (one per sub-call + one combined). To avoid this, add a `_persist_history` parameter defaulting to `True`:
 
 ```python
-def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
+def run_health_check(knowledge_base_root: Path, *, _persist_history: bool = True) -> dict:
     ...
     if _persist_history:
-        record_snapshot(kb_root, result["summary"], None)
+        record_snapshot(knowledge_base_root, result["summary"], None)
     return result
 
-def run_tier2_prescreening(kb_root: Path, *, _persist_history: bool = True) -> dict:
+def run_tier2_prescreening(knowledge_base_root: Path, *, _persist_history: bool = True) -> dict:
     ...
     if _persist_history:
-        record_snapshot(kb_root, None, result["summary"])
+        record_snapshot(knowledge_base_root, None, result["summary"])
     return result
 
-def run_combined_report(kb_root: Path) -> dict:
+def run_combined_report(knowledge_base_root: Path) -> dict:
     result = {
-        "tier1": run_health_check(kb_root, _persist_history=False),
-        "tier2": run_tier2_prescreening(kb_root, _persist_history=False),
+        "tier1": run_health_check(knowledge_base_root, _persist_history=False),
+        "tier2": run_tier2_prescreening(knowledge_base_root, _persist_history=False),
     }
-    record_snapshot(kb_root, result["tier1"]["summary"], result["tier2"]["summary"])
+    record_snapshot(knowledge_base_root, result["tier1"]["summary"], result["tier2"]["summary"])
     return result
 ```
 
 **Step 4: Run tests to verify they pass**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py -v`
 Expected: All tests pass
 
 Run: `python3 -m pytest tests/ -v -k "not test_scaffold_sandbox"`
@@ -756,7 +756,7 @@ Expected: All tests pass (no regressions)
 **Step 5: Commit**
 
 ```bash
-git add dewey/skills/health/scripts/check_kb.py tests/skills/health/test_check_kb.py
+git add dewey/skills/health/scripts/check_knowledge_base.py tests/skills/health/test_check_knowledge_base.py
 git commit -m "Auto-persist history snapshot after each health check run"
 ```
 
@@ -774,13 +774,13 @@ Add entries for `history.py` and `utilization.py` in the `<scripts_integration>`
 
 ```markdown
 **history.py** -- Health score history tracking
-- `record_snapshot(kb_root, tier1_summary, tier2_summary)` -- Appends timestamped snapshot to `.dewey/history/health-log.jsonl`
-- `read_history(kb_root, limit=10)` -- Returns the last N snapshots in chronological order
-- Auto-called by `check_kb.py` after each run
+- `record_snapshot(knowledge_base_root, tier1_summary, tier2_summary)` -- Appends timestamped snapshot to `.dewey/history/health-log.jsonl`
+- `read_history(knowledge_base_root, limit=10)` -- Returns the last N snapshots in chronological order
+- Auto-called by `check_knowledge_base.py` after each run
 
 **utilization.py** -- Topic reference tracking
-- `record_reference(kb_root, file_path, context="user")` -- Appends to `.dewey/utilization/log.jsonl`
-- `read_utilization(kb_root)` -- Returns per-file stats: `{file: {count, first_referenced, last_referenced}}`
+- `record_reference(knowledge_base_root, file_path, context="user")` -- Appends to `.dewey/utilization/log.jsonl`
+- `read_utilization(knowledge_base_root)` -- Returns per-file stats: `{file: {count, first_referenced, last_referenced}}`
 ```
 
 **Step 2: Update CLAUDE.md status table**
@@ -821,7 +821,7 @@ Expected: All tests pass (263 original + new history + utilization tests)
 **Step 2: Verify end-to-end**
 
 ```bash
-python3 dewey/skills/health/scripts/check_kb.py --kb-root sandbox --both
+python3 dewey/skills/health/scripts/check_knowledge_base.py --knowledge-base-root sandbox --both
 cat sandbox/.dewey/history/health-log.jsonl
 ```
 

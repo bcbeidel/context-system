@@ -14,23 +14,23 @@ The `.dewey/history/` and `.dewey/utilization/` directories are scaffolded by `/
 **New file:** `dewey/skills/health/scripts/history.py`
 
 Two functions:
-- `record_snapshot(kb_root, tier1_summary, tier2_summary)` -- appends a timestamped snapshot to `.dewey/history/health-log.jsonl`
-- `read_history(kb_root, limit=10)` -- reads the last N snapshots for trend display
+- `record_snapshot(knowledge_base_root, tier1_summary, tier2_summary)` -- appends a timestamped snapshot to `.dewey/history/health-log.jsonl`
+- `read_history(knowledge_base_root, limit=10)` -- reads the last N snapshots for trend display
 
 **Format** (one JSONL line per snapshot):
 ```json
 {"timestamp": "2026-02-15T14:30:00", "tier1": {"total_files": 9, "fail_count": 1, "warn_count": 0, "pass_count": 8}, "tier2": {"total_files_scanned": 9, "files_with_triggers": 8, "trigger_counts": {"depth_accuracy": 6}}}
 ```
 
-**Integration:** `check_kb.py` auto-persists a snapshot after each run (Tier 1 only, `--tier2`, or `--both`). The audit workflow can show "vs. last run: +2 new issues, -1 resolved."
+**Integration:** `check_knowledge_base.py` auto-persists a snapshot after each run (Tier 1 only, `--tier2`, or `--both`). The audit workflow can show "vs. last run: +2 new issues, -1 resolved."
 
 ### Utilization: Reference Tracking
 
 **New file:** `dewey/skills/health/scripts/utilization.py`
 
 Two functions:
-- `record_reference(kb_root, file_path, context="user")` -- appends to `.dewey/utilization/log.jsonl`
-- `read_utilization(kb_root)` -- returns per-file stats: `{file: {count, last_referenced, first_referenced}}`
+- `record_reference(knowledge_base_root, file_path, context="user")` -- appends to `.dewey/utilization/log.jsonl`
+- `read_utilization(knowledge_base_root)` -- returns per-file stats: `{file: {count, last_referenced, first_referenced}}`
 
 **Format** (one JSONL line per reference event):
 ```json
@@ -41,7 +41,7 @@ Two functions:
 
 ### Changes to Existing Code
 
-- `check_kb.py` -- call `record_snapshot()` after running checks
+- `check_knowledge_base.py` -- call `record_snapshot()` after running checks
 - `health-audit.md` -- mention history comparison in report output
 - `health-review.md` -- use utilization data for Tier 3 scope decisions (already designed for this)
 

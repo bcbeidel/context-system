@@ -38,9 +38,9 @@ Breaking change -- old snapshots without `file_list` are not supported. Existing
 
 **New validator (`validators.py`):**
 
-`check_inventory_regression(kb_root, knowledge_dir, current_files)` -- reads the last history snapshot via `read_history(kb_root, limit=1)`. Compares `file_list` from last snapshot against current discovered files. Returns a warning for each file present in the last snapshot but missing now.
+`check_inventory_regression(knowledge_base_root, knowledge_dir, current_files)` -- reads the last history snapshot via `read_history(knowledge_base_root, limit=1)`. Compares `file_list` from last snapshot against current discovered files. Returns a warning for each file present in the last snapshot but missing now.
 
-**Integration (`check_kb.py`):**
+**Integration (`check_knowledge_base.py`):**
 
 - `_discover_md_files()` results passed to `record_snapshot()` as `file_list` parameter
 - `check_inventory_regression()` called during `run_health_check()` with current file list
@@ -68,7 +68,7 @@ Inline citations are markdown links in the pattern `[text](url)` within those se
 }
 ```
 
-**Integration (`check_kb.py`):**
+**Integration (`check_knowledge_base.py`):**
 
 Added to `run_tier2_prescreening()` alongside the existing 5 triggers.
 
@@ -76,7 +76,7 @@ Added to `run_tier2_prescreening()` alongside the existing 5 triggers.
 
 **Workflow change (`health-audit.md`):**
 
-New step after remediation: re-run `check_kb.py --both` on the full KB. Compare against the initial run:
+New step after remediation: re-run `check_knowledge_base.py --both` on the full knowledge base. Compare against the initial run:
 
 - File count: same, increased, or decreased?
 - Previously flagged items: resolved or still present?
@@ -110,11 +110,11 @@ New section defining quality requirements for content written during remediation
 | `dewey/skills/health/scripts/history.py` | Add `file_list` parameter to `record_snapshot()` |
 | `dewey/skills/health/scripts/validators.py` | Add `check_inventory_regression()` |
 | `dewey/skills/health/scripts/tier2_triggers.py` | Add `trigger_citation_quality()` |
-| `dewey/skills/health/scripts/check_kb.py` | Pass file list to history, run inventory check, run citation trigger |
+| `dewey/skills/health/scripts/check_knowledge_base.py` | Pass file list to history, run inventory check, run citation trigger |
 | `dewey/skills/health/workflows/health-audit.md` | Calibration anchors, remediation standards, verification step |
 | `tests/skills/health/test_validators.py` | Tests for `check_inventory_regression` |
 | `tests/skills/health/test_tier2_triggers.py` | Tests for `trigger_citation_quality` |
-| `tests/skills/health/test_check_kb.py` | Tests for inventory integration, citation trigger integration |
+| `tests/skills/health/test_check_knowledge_base.py` | Tests for inventory integration, citation trigger integration |
 | `tests/skills/health/test_history.py` | Tests for `file_list` in snapshots |
 
 ## Not In Scope

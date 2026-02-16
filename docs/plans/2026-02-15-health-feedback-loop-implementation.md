@@ -69,7 +69,7 @@ In `dewey/skills/health/scripts/history.py`, modify `record_snapshot`:
 
 ```python
 def record_snapshot(
-    kb_root: Path,
+    knowledge_base_root: Path,
     tier1_summary: dict,
     tier2_summary: Optional[dict] = None,
     file_list: Optional[list[str]] = None,
@@ -78,9 +78,9 @@ def record_snapshot(
 
     Parameters
     ----------
-    kb_root:
+    knowledge_base_root:
         Root directory of the knowledge base (the log is written
-        inside ``kb_root/.dewey/history/``).
+        inside ``knowledge_base_root/.dewey/history/``).
     tier1_summary:
         Summary dict from ``run_health_check``.
     tier2_summary:
@@ -93,7 +93,7 @@ def record_snapshot(
     Path
         Absolute path to the log file.
     """
-    log_dir = kb_root / _LOG_DIR
+    log_dir = knowledge_base_root / _LOG_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
 
     log_path = log_dir / _LOG_FILE
@@ -212,7 +212,7 @@ Expected: FAIL — `check_inventory_regression` not defined
 Add to `dewey/skills/health/scripts/validators.py` at the bottom, before any `if __name__` block:
 
 ```python
-def check_inventory_regression(kb_root: Path, current_files: list[str]) -> list[dict]:
+def check_inventory_regression(knowledge_base_root: Path, current_files: list[str]) -> list[dict]:
     """Warn when files from the last health snapshot are missing.
 
     Compares *current_files* (relative paths like ``area/topic.md``)
@@ -223,7 +223,7 @@ def check_inventory_regression(kb_root: Path, current_files: list[str]) -> list[
     from history import read_history
 
     issues: list[dict] = []
-    history = read_history(kb_root, limit=1)
+    history = read_history(knowledge_base_root, limit=1)
     if not history:
         return issues
 
@@ -451,15 +451,15 @@ git commit -m "Add trigger_citation_quality for duplicate URL detection"
 
 ---
 
-### Task 4: Wire inventory + citations into check_kb.py
+### Task 4: Wire inventory + citations into check_knowledge_base.py
 
 **Files:**
-- Modify: `dewey/skills/health/scripts/check_kb.py`
-- Test: `tests/skills/health/test_check_kb.py`
+- Modify: `dewey/skills/health/scripts/check_knowledge_base.py`
+- Test: `tests/skills/health/test_check_knowledge_base.py`
 
 **Step 1: Write the failing tests**
 
-Add to `tests/skills/health/test_check_kb.py`:
+Add to `tests/skills/health/test_check_knowledge_base.py`:
 
 ```python
 class TestInventoryIntegration(unittest.TestCase):
@@ -553,7 +553,7 @@ class TestCitationQualityIntegration(unittest.TestCase):
         self.assertTrue(len(citation_items) > 0)
 ```
 
-Also update the existing `TestTier2OutputSchema.test_valid_trigger_names` to include the new trigger. In `tests/skills/health/test_check_kb.py`, find the `test_valid_trigger_names` method and change the `known_triggers` set:
+Also update the existing `TestTier2OutputSchema.test_valid_trigger_names` to include the new trigger. In `tests/skills/health/test_check_knowledge_base.py`, find the `test_valid_trigger_names` method and change the `known_triggers` set:
 
 ```python
     def test_valid_trigger_names(self):
@@ -570,12 +570,12 @@ Also update the existing `TestTier2OutputSchema.test_valid_trigger_names` to inc
 
 **Step 2: Run tests to verify they fail**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestInventoryIntegration tests/skills/health/test_check_kb.py::TestCitationQualityIntegration -v`
-Expected: FAIL — check_kb.py doesn't pass file_list to history, doesn't run citation trigger
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestInventoryIntegration tests/skills/health/test_check_knowledge_base.py::TestCitationQualityIntegration -v`
+Expected: FAIL — check_knowledge_base.py doesn't pass file_list to history, doesn't run citation trigger
 
 **Step 3: Implement the wiring**
 
-Modify `dewey/skills/health/scripts/check_kb.py`:
+Modify `dewey/skills/health/scripts/check_knowledge_base.py`:
 
 1. Add imports:
 ```python
@@ -614,13 +614,13 @@ _TIER2_TRIGGERS = [
 
 3. In `run_health_check`, compute relative file paths, run inventory check, and pass file_list to `record_snapshot`:
 ```python
-def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
-    knowledge_dir_name = read_knowledge_dir(kb_root)
+def run_health_check(knowledge_base_root: Path, *, _persist_history: bool = True) -> dict:
+    knowledge_dir_name = read_knowledge_dir(knowledge_base_root)
     all_issues: list[dict] = []
-    md_files = _discover_md_files(kb_root, knowledge_dir_name)
+    md_files = _discover_md_files(knowledge_base_root, knowledge_dir_name)
 
     # Compute relative paths for history tracking
-    knowledge_dir = kb_root / knowledge_dir_name
+    knowledge_dir = knowledge_base_root / knowledge_dir_name
     file_list = [
         str(f.relative_to(knowledge_dir)) for f in md_files
     ]
@@ -629,15 +629,15 @@ def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
     for md_file in md_files:
         all_issues.extend(check_frontmatter(md_file))
         all_issues.extend(check_section_ordering(md_file))
-        all_issues.extend(check_cross_references(md_file, kb_root))
+        all_issues.extend(check_cross_references(md_file, knowledge_base_root))
         all_issues.extend(check_size_bounds(md_file))
         all_issues.extend(check_source_urls(md_file))
         all_issues.extend(check_freshness(md_file))
 
     # Structural validators (run once)
-    all_issues.extend(check_coverage(kb_root, knowledge_dir_name=knowledge_dir_name))
-    all_issues.extend(check_index_sync(kb_root, knowledge_dir_name=knowledge_dir_name))
-    all_issues.extend(check_inventory_regression(kb_root, file_list))
+    all_issues.extend(check_coverage(knowledge_base_root, knowledge_dir_name=knowledge_dir_name))
+    all_issues.extend(check_index_sync(knowledge_base_root, knowledge_dir_name=knowledge_dir_name))
+    all_issues.extend(check_inventory_regression(knowledge_base_root, file_list))
 
     # Build summary
     files_with_fails = set()
@@ -665,7 +665,7 @@ def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
         },
     }
     if _persist_history:
-        record_snapshot(kb_root, result["summary"], None, file_list=file_list)
+        record_snapshot(knowledge_base_root, result["summary"], None, file_list=file_list)
     return result
 ```
 
@@ -673,11 +673,11 @@ def run_health_check(kb_root: Path, *, _persist_history: bool = True) -> dict:
 
 In `run_tier2_prescreening`, compute file_list and pass it:
 ```python
-def run_tier2_prescreening(kb_root: Path, *, _persist_history: bool = True) -> dict:
-    knowledge_dir_name = read_knowledge_dir(kb_root)
-    md_files = _discover_md_files(kb_root, knowledge_dir_name)
+def run_tier2_prescreening(knowledge_base_root: Path, *, _persist_history: bool = True) -> dict:
+    knowledge_dir_name = read_knowledge_dir(knowledge_base_root)
+    md_files = _discover_md_files(knowledge_base_root, knowledge_dir_name)
 
-    knowledge_dir = kb_root / knowledge_dir_name
+    knowledge_dir = knowledge_base_root / knowledge_dir_name
     file_list = [str(f.relative_to(knowledge_dir)) for f in md_files]
 
     queue: list[dict] = []
@@ -701,24 +701,24 @@ def run_tier2_prescreening(kb_root: Path, *, _persist_history: bool = True) -> d
         },
     }
     if _persist_history:
-        record_snapshot(kb_root, None, result["summary"], file_list=file_list)
+        record_snapshot(knowledge_base_root, None, result["summary"], file_list=file_list)
     return result
 ```
 
 In `run_combined_report`:
 ```python
-def run_combined_report(kb_root: Path) -> dict:
-    knowledge_dir_name = read_knowledge_dir(kb_root)
-    md_files = _discover_md_files(kb_root, knowledge_dir_name)
-    knowledge_dir = kb_root / knowledge_dir_name
+def run_combined_report(knowledge_base_root: Path) -> dict:
+    knowledge_dir_name = read_knowledge_dir(knowledge_base_root)
+    md_files = _discover_md_files(knowledge_base_root, knowledge_dir_name)
+    knowledge_dir = knowledge_base_root / knowledge_dir_name
     file_list = [str(f.relative_to(knowledge_dir)) for f in md_files]
 
     result = {
-        "tier1": run_health_check(kb_root, _persist_history=False),
-        "tier2": run_tier2_prescreening(kb_root, _persist_history=False),
+        "tier1": run_health_check(knowledge_base_root, _persist_history=False),
+        "tier2": run_tier2_prescreening(knowledge_base_root, _persist_history=False),
     }
     record_snapshot(
-        kb_root, result["tier1"]["summary"], result["tier2"]["summary"],
+        knowledge_base_root, result["tier1"]["summary"], result["tier2"]["summary"],
         file_list=file_list,
     )
     return result
@@ -732,7 +732,7 @@ Expected: ALL PASS
 **Step 5: Commit**
 
 ```bash
-git add dewey/skills/health/scripts/check_kb.py tests/skills/health/test_check_kb.py
+git add dewey/skills/health/scripts/check_knowledge_base.py tests/skills/health/test_check_knowledge_base.py
 git commit -m "Wire inventory regression + citation quality into health runner"
 ```
 
@@ -758,10 +758,10 @@ Insert after the trigger summary table (line ~28) and before "## Step 2":
 Before assessing queue items, review these reference verdicts to ensure consistent thresholds across all evaluations:
 
 **source_drift — Flag:**
-The source URL has been updated with new API endpoints, changed pricing tiers, or deprecated features not reflected in the KB entry. The KB makes claims the source no longer supports.
+The source URL has been updated with new API endpoints, changed pricing tiers, or deprecated features not reflected in the knowledge-base entry. The knowledge base makes claims the source no longer supports.
 
 **source_drift — OK:**
-Minor wording changes or page redesign, but the substantive claims and recommendations in the KB still align with the source content.
+Minor wording changes or page redesign, but the substantive claims and recommendations in the knowledge base still align with the source content.
 
 **depth_accuracy — Flag:**
 A working-depth file where "In Practice" contains only bold-header + 2-bullet enumeration lists (no scenarios, worked examples, or code). Reads as a reference checklist rather than actionable working guidance.
@@ -823,7 +823,7 @@ When fixing flagged items (either now or in a follow-up session), all new conten
 After making fixes, re-run the combined check to confirm improvements and detect regressions:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_kb.py --kb-root <kb_root> --both
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_knowledge_base.py --knowledge-base-root <knowledge_base_root> --both
 ```
 
 Compare the results against the initial run from Step 1:
@@ -877,9 +877,9 @@ git commit -m "Add calibration anchors, remediation standards, and verification 
 Run: `python3 -m pytest tests/ -v -k "not test_scaffold_sandbox"`
 Expected: ALL PASS
 
-**Step 2: Run check_kb.py against sandbox to verify end-to-end**
+**Step 2: Run check_knowledge_base.py against sandbox to verify end-to-end**
 
-Run: `python3 dewey/skills/health/scripts/check_kb.py --kb-root sandbox --both`
+Run: `python3 dewey/skills/health/scripts/check_knowledge_base.py --knowledge-base-root sandbox --both`
 Expected: JSON output with `tier1` and `tier2` sections. Tier 2 queue should now include `citation_quality` triggers if any sandbox files have duplicate inline citations. History snapshot should include `file_list`.
 
 **Step 3: Verify snapshot has file_list**

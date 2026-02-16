@@ -2,17 +2,17 @@
 
 ## Problem
 
-The curate skill forces users through a structured menu (add / propose / promote / ingest / plan) before understanding what they want. This creates cognitive overhead and friction. Meanwhile, the best curation moments in practice happen organically — a user researches something, then says "save this to my KB." Three separate skills (explore, init, curate) form a linear pipeline with two handoff seams where context gets lost.
+The curate skill forces users through a structured menu (add / propose / promote / ingest / plan) before understanding what they want. This creates cognitive overhead and friction. Meanwhile, the best curation moments in practice happen organically — a user researches something, then says "save this to my knowledge base." Three separate skills (explore, init, curate) form a linear pipeline with two handoff seams where context gets lost.
 
 ## Solution
 
-Redesign curate as the single entry point for all knowledge base content operations. Replace the action menu with a free-text intent classifier. Absorb explore and init as workflows within curate, triggered automatically based on KB state.
+Redesign curate as the single entry point for all knowledge base content operations. Replace the action menu with a free-text intent classifier. Absorb explore and init as workflows within curate, triggered automatically based on knowledge-base state.
 
 ## Design Decisions
 
 - **Free text first.** The user expresses intent in natural language. Claude classifies and routes.
 - **No sub-commands.** Remove `add`/`propose`/`promote`/`ingest`/`plan` as explicit arguments. One way in.
-- **Conversational triggers.** The skill matches both `/dewey:curate` and natural-language curation intent mid-conversation ("save this to my KB", "add that to my knowledge base").
+- **Conversational triggers.** The skill matches both `/dewey:curate` and natural-language curation intent mid-conversation ("save this to my knowledge base", "add that to my knowledge base").
 - **Curation plan stays a prerequisite.** But it's created after understanding intent, not before. Seeded with the user's stated intent.
 - **New domain areas offered inline.** When a topic doesn't fit existing areas, Claude offers to create one on the spot rather than hitting a dead end.
 - **Health stays separate.** Different concern (validation vs. content lifecycle), different triggers.
@@ -22,19 +22,19 @@ Redesign curate as the single entry point for all knowledge base content operati
 ```
 User input (free text, URL, /dewey:curate, or conversational cue)
   │
-  ├── No KB exists?
+  ├── No knowledge base exists?
   │     ├── Vague intent ("help me set up") ──→ curate-discover.md
-  │     ├── Clear intent ("KB for marketing") ──→ curate-setup.md
+  │     ├── Clear intent ("knowledge base for marketing") ──→ curate-setup.md
   │     └── Very specific ("add topic X") ────→ curate-setup.md, then curate-add.md
   │
-  └── KB exists?
+  └── Knowledge base exists?
         ├── No plan? ──→ Build plan (seeded with intent), then route
         └── Plan exists? ──→ Classify intent, then route
 ```
 
 ### Intent Classification
 
-When KB exists and plan exists, Claude classifies free-text intent:
+When the knowledge base exists and plan exists, Claude classifies free-text intent:
 
 | Intent | Signal patterns | Routes to |
 |--------|----------------|-----------|
@@ -48,7 +48,7 @@ If intent is ambiguous, Claude asks one clarifying question — not a menu.
 
 ### Conversational Trigger
 
-The skill activates on `/dewey:curate` or when the user expresses curation intent in conversation: "add this to the KB", "capture this as a topic", "save this to my knowledge base", "let's put this in the knowledge base", or similar phrases.
+The skill activates on `/dewey:curate` or when the user expresses curation intent in conversation: "add this to the knowledge base", "capture this as a topic", "save this to my knowledge base", "let's put this in the knowledge base", or similar phrases.
 
 When triggered conversationally, the skill skips the "what would you like to add or change?" prompt — the user already said what they want. Claude classifies intent from the conversation context and routes directly.
 
@@ -70,13 +70,13 @@ When triggered conversationally, the skill skips the "what would you like to add
 | `init/scripts/scaffold.py` | Shared infrastructure — curate-setup and curate-discover call it by path |
 | `init/scripts/templates.py` | Used by scaffold.py |
 | `init/scripts/config.py` | Used by health and curate scripts |
-| `init/references/kb-spec-summary.md` | Loaded as required reading by curate-setup and curate-discover |
+| `init/references/knowledge-base-spec-summary.md` | Loaded as required reading by curate-setup and curate-discover |
 
 ### What the user sees
 
 Before: three skills (`/dewey:explore`, `/dewey:init`, `/dewey:curate`) with handoff instructions between them.
 
-After: one skill (`/dewey:curate` or natural language). The intake handles everything from "I have no KB and don't know where to start" through "promote this proposal."
+After: one skill (`/dewey:curate` or natural language). The intake handles everything from "I have no knowledge base and don't know where to start" through "promote this proposal."
 
 ## Workflow Changes
 
@@ -115,7 +115,7 @@ After: one skill (`/dewey:curate` or natural language). The intake handles every
 ## Plan Gate Timing
 
 1. User expresses intent
-2. Claude checks if KB exists (hard stop if not — routes to discover or setup)
+2. Claude checks if the knowledge base exists (hard stop if not — routes to discover or setup)
 3. Claude classifies intent
 4. Before routing to the workflow, Claude checks for the curation plan:
    - **Plan exists** — consult it silently (is this topic planned? in scope?) and route

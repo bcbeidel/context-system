@@ -34,7 +34,7 @@ dewey/
 
 | Skill | Purpose |
 |-------|---------|
-| `curate` | Single entry point for all KB content operations: discover domains, scaffold structure, add/update topics, ingest URLs, manage proposals and curation plan |
+| `curate` | Single entry point for all knowledge-base content operations: discover domains, scaffold structure, add/update topics, ingest URLs, manage proposals and curation plan |
 | `health` | Validate quality, check freshness, analyze coverage gaps, generate reports |
 
 ### Three-Tier Health Model
@@ -45,7 +45,7 @@ dewey/
 
 ### Utilization Tracking
 
-A Claude Code `PostToolUse` hook on the `Read` tool automatically logs when an agent reads a KB topic file. Data feeds into `generate_recommendations()` which surfaces stale-high-use, expand-depth, low-utilization, and never-referenced files. Scaffold auto-generates the hook config. Claude Code-specific (other agents don't get auto-tracking).
+A Claude Code `PostToolUse` hook on the `Read` tool automatically logs when an agent reads a knowledge-base topic file. Data feeds into `generate_recommendations()` which surfaces stale-high-use, expand-depth, low-utilization, and never-referenced files. Scaffold auto-generates the hook config. Claude Code-specific (other agents don't get auto-tracking).
 
 ### Design Principles
 
@@ -88,4 +88,4 @@ All validators and triggers return `list[dict]` (always a list, even if empty):
 
 - Tier 3 human decision queue: designed in `health-review.md` but not yet tested ([#2](https://github.com/bcbeidel/dewey/issues/2))
 - Utilization auto-capture: hook exists but auto-capture not yet wired up ([#3](https://github.com/bcbeidel/dewey/issues/3))
-- Cross-provider support: KB output format is provider-agnostic by design, but Dewey currently only runs as a Claude Code plugin ([#1](https://github.com/bcbeidel/dewey/issues/1))
+- Cross-provider support: Knowledge-base output format is provider-agnostic by design, but Dewey currently only runs as a Claude Code plugin ([#1](https://github.com/bcbeidel/dewey/issues/1))

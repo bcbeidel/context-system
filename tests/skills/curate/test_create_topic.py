@@ -13,7 +13,7 @@ class TestCreateTopic(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
-        # Minimal KB structure: knowledge/{area}/ and knowledge/_proposals/
+        # Minimal knowledge-base structure: knowledge/{area}/ and knowledge/_proposals/
         self.area = "campaign-management"
         (self.tmpdir / "docs" / self.area).mkdir(parents=True)
         (self.tmpdir / "docs" / "_proposals").mkdir(parents=True)

@@ -34,13 +34,13 @@ Twelve principles grounded in agent context research (Anthropic, OpenAI) and cog
 
 4. **Collaborative Curation** -- Either the human or an agent can propose additions, but all content passes through validation. The human brings domain judgment. The agent brings systematic coverage. Neither is sufficient alone.
 
-5. **Provenance & Traceability** -- Every piece of knowledge carries metadata about where it came from, when it was last validated, and why it's in the KB. Enables freshness checks, builds trust, supports learning.
+5. **Provenance & Traceability** -- Every piece of knowledge carries metadata about where it came from, when it was last validated, and why it's in the knowledge base. Enables freshness checks, builds trust, supports learning.
 
 6. **Domain-Shaped Organization** -- Organized around the domain's natural structure, not file types or technical categories. The taxonomy should feel intuitive to a practitioner.
 
 7. **Right-Sized Scope** -- Contains what's needed to be effective in the role, and no more. The curation act is as much about what you exclude as what you include.
 
-8. **Empirical Feedback** -- Observable signals about KB health: coverage gaps, stale entries, unused content. Proxy metrics inform curation decisions and make the maintenance burden visible.
+8. **Empirical Feedback** -- Observable signals about knowledge-base health: coverage gaps, stale entries, unused content. Proxy metrics inform curation decisions and make the maintenance burden visible.
 
 9. **Progressive Disclosure** -- Layered access so agents can discover what's available without loading everything. Metadata (Level 1) -> summaries (Level 2) -> full content (Level 3) -> deep references (Level 4).
 
@@ -50,7 +50,7 @@ Twelve principles grounded in agent context research (Anthropic, OpenAI) and cog
 
 11. **Concrete Before Abstract** -- Concrete concepts with visual representations create two memory traces; abstract concepts create one (Paivio, 1986). Learners progress from concrete to abstract (Bruner, 1960). Lead with examples and visuals, then build toward the abstraction.
 
-12. **Multiple Representations** -- Material that helps novices actively hinders experts, and vice versa (Kalyuga et al., 2003). Important concepts should exist at multiple levels of depth (overview, explanation, reference) and appear across the KB. Label each level clearly so readers self-select.
+12. **Multiple Representations** -- Material that helps novices actively hinders experts, and vice versa (Kalyuga et al., 2003). Important concepts should exist at multiple levels of depth (overview, explanation, reference) and appear across the knowledge base. Label each level clearly so readers self-select.
 
 ### Research Sources
 
@@ -78,7 +78,7 @@ Twelve principles grounded in agent context research (Anthropic, OpenAI) and cog
 project-root/
 ├── AGENTS.md                       # Persona + manifest
 ├── knowledge/
-│   ├── index.md                    # Human TOC + KB health summary
+│   ├── index.md                    # Human TOC + knowledge-base health summary
 │   ├── <domain-area>/
 │   │   ├── overview.md             # Orientation: what, why, how it connects
 │   │   ├── <topic>.md              # Working knowledge with inline sources
@@ -97,8 +97,8 @@ project-root/
 - **Three content depths per topic**: overview (orientation), working document (for doing), reference (quick lookup). Not every topic needs all three.
 - **Every .md file** includes frontmatter with source URLs, last-validated date, relevance statement, and depth level.
 - **Two entry points**: AGENTS.md for agents, index.md for humans.
-- **`_proposals/`** is the staging area for collaborative curation. Either party drops proposed additions here; validation promotes them into the KB.
-- **`.dewey/`** holds tooling metadata invisible to KB consumers.
+- **`_proposals/`** is the staging area for collaborative curation. Either party drops proposed additions here; validation promotes them into the knowledge base.
+- **`.dewey/`** holds tooling metadata invisible to knowledge-base consumers.
 
 ## Content Format
 
@@ -280,7 +280,7 @@ sources:
 ---
 ```
 
-Either party drops a file here. Validation promotes it into the KB or rejects it.
+Either party drops a file here. Validation promotes it into the knowledge base or rejects it.
 
 ## Quality Validation
 
@@ -330,7 +330,7 @@ Triggered by deterministic conditions, evaluated by LLM. Produces structured ass
 
 **Source Drift:**
 - *Trigger:* `last_validated` past threshold or source content hash changed
-- *LLM task:* Compare KB claims against current source content. Output structured diff: `[{claim, status: still_accurate|changed|removed, evidence}]`
+- *LLM task:* Compare knowledge-base claims against current source content. Output structured diff: `[{claim, status: still_accurate|changed|removed, evidence}]`
 
 **Depth Label Accuracy:**
 - *Trigger:* Word count / prose ratio outside expected range for depth label
@@ -362,10 +362,10 @@ Fundamentally editorial decisions where LLM gathers evidence and frames the ques
 
 **Proposal Acceptance:**
 - LLM validates structure and assesses quality.
-- Human decides whether to promote into KB.
+- Human decides whether to promote into knowledge base.
 
 **Conflict Resolution:**
-- LLM surfaces specific changes between KB claims and updated sources.
+- LLM surfaces specific changes between knowledge-base claims and updated sources.
 - Human decides how to reconcile.
 
 ### Validation Summary
@@ -394,4 +394,4 @@ Utilization tracking adds a fourth signal over time: content that scores well on
 
 - **Direct measurement of the dual mandate.** Better agent outputs and more informed humans are outcomes we optimize toward, but measuring them requires observing human-agent collaboration over time. The quality dimensions are research-grounded proxy metrics.
 - **Implementation details.** Which Dewey skills to build, in what order, with what interfaces. That belongs in the implementation plan.
-- **KB content for any specific role.** The spec defines what a well-formed KB looks like. Populating it for a specific role (paid media analyst, platform engineer, data scientist) is a separate activity.
+- **Knowledge-base content for any specific role.** The spec defines what a well-formed knowledge base looks like. Populating it for a specific role (paid media analyst, platform engineer, data scientist) is a separate activity.

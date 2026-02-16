@@ -1,6 +1,6 @@
 ---
 name: curate
-description: Add, update, or manage content in a knowledge base — triggered by command or natural-language curation intent like "save this to my KB"
+description: Add, update, or manage content in a knowledge base — triggered by command or natural-language curation intent like "save this to my knowledge base"
 ---
 
 <essential_principles>
@@ -11,7 +11,7 @@ Single entry point for all knowledge base operations: discovering domains, scaff
 ## Core Approach
 
 1. **Understand intent** -- The user expresses what they want in natural language. Claude classifies and routes.
-2. **Assess KB state** -- Is there a knowledge base? A curation plan? Existing domain areas?
+2. **Assess knowledge-base state** -- Is there a knowledge base? A curation plan? Existing domain areas?
 3. **Route to workflow** -- Based on intent + state, route to the right workflow. No menus.
 
 ## Design Philosophy
@@ -30,7 +30,7 @@ Single entry point for all knowledge base operations: discovering domains, scaff
 </essential_principles>
 
 <intake>
-This skill activates on `/dewey:curate` or when the user expresses curation intent in conversation: "add this to the KB", "capture this as a topic", "save this to my knowledge base", "let's put this in the knowledge base", "I want to add a new domain area", or similar phrases.
+This skill activates on `/dewey:curate` or when the user expresses curation intent in conversation: "add this to the knowledge base", "capture this as a topic", "save this to my knowledge base", "let's put this in the knowledge base", "I want to add a new domain area", or similar phrases.
 
 ## Step 1: Gather intent
 
@@ -52,7 +52,7 @@ Check for:
 ### No knowledge base exists
 
 - **Vague or exploratory intent** ("help me set up", "I don't know where to start", no specific topic) -> Route to `workflows/curate-discover.md`
-- **Clear intent with goals** ("I want a KB for marketing analytics", "build a knowledge base for my team") -> Route to `workflows/curate-setup.md`
+- **Clear intent with goals** ("I want a knowledge base for marketing analytics", "build a knowledge base for my team") -> Route to `workflows/curate-setup.md`
 - **Very specific intent** ("add a topic about bid strategies") -> Route to `workflows/curate-setup.md` with a note to resume into the specific curation action after scaffolding
 
 ### Knowledge base exists, no curation plan
@@ -88,7 +88,7 @@ If intent is ambiguous, ask **one** clarifying question -- not a menu of options
 During classification, if the user's topic doesn't fit any existing domain area:
 
 1. Tell the user: "This doesn't fit your existing areas ([list areas]). Want me to create a new domain area for it?"
-2. If yes: route to `workflows/curate-setup.md` (which handles adding areas to an existing KB via its re-init path), then resume into the original curation action
+2. If yes: route to `workflows/curate-setup.md` (which handles adding areas to an existing knowledge base via its re-init path), then resume into the original curation action
 3. If no: ask where they'd like to put it, or whether to skip
 </intake>
 
@@ -99,12 +99,12 @@ All workflows in `workflows/`:
 
 | Workflow | Purpose |
 |----------|---------|
-| curate-discover.md | Guided conversation to discover role, domains, scaffold KB, and build curation plan |
-| curate-setup.md | Evaluate repo, scaffold KB structure (or add areas to existing KB), build plan |
+| curate-discover.md | Guided conversation to discover role, domains, scaffold knowledge base, and build curation plan |
+| curate-setup.md | Evaluate repo, scaffold knowledge-base structure (or add areas to existing knowledge base), build plan |
 | curate-add.md | Create a new topic or update an existing one in a domain area |
 | curate-propose.md | Submit a topic proposal for review |
 | curate-promote.md | Promote a validated proposal into a domain area |
-| curate-ingest.md | Ingest an external URL -- evaluate against KB, then propose or update |
+| curate-ingest.md | Ingest an external URL -- evaluate against knowledge base, then propose or update |
 | curate-plan.md | View, add to, or remove items from the curation plan |
 </workflows_index>
 
@@ -115,22 +115,22 @@ All workflows in `workflows/`:
 
 **create_topic.py** -- Create topic files in a domain area
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/create_topic.py --kb-root <root> --area <area> --topic "<name>" --relevance "<relevance>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/create_topic.py --knowledge-base-root <root> --area <area> --topic "<name>" --relevance "<relevance>"
 ```
 
 **propose.py** -- Create a proposal file
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --kb-root <root> --topic "<name>" --relevance "<relevance>" --proposed-by "<who>" --rationale "<why>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --knowledge-base-root <root> --topic "<name>" --relevance "<relevance>" --proposed-by "<who>" --rationale "<why>"
 ```
 
 **promote.py** -- Move a proposal into a domain area
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/promote.py --kb-root <root> --proposal "<slug>" --target-area "<area>"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/promote.py --knowledge-base-root <root> --proposal "<slug>" --target-area "<area>"
 ```
 
 **Scaffolding scripts** in `scripts/`:
 
-**scaffold.py** -- Create or extend KB directory structure
+**scaffold.py** -- Create or extend knowledge-base directory structure
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/scaffold.py --target <dir> --role "<persona>" --areas "<area1>,<area2>"
 ```

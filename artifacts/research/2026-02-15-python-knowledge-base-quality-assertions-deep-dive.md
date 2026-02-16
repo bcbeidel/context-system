@@ -76,17 +76,17 @@ The core opportunity: push the boundary of what Python can assert, auto-correct 
 **Auto-fix potential**: Yes -- can insert stub section with `<!-- TODO: ... -->` placeholder
 **Implementation**: Regex search for `## Section Name` (case-insensitive) after frontmatter
 
-#### A3. `check_agents_md_sync(kb_root)` -- NEW
+#### A3. `check_agents_md_sync(knowledge_base_root)` -- NEW
 **Principle**: #6 Domain-Shaped Organization, #9 Progressive Disclosure
 **Checks**:
 - Every area directory on disk appears in AGENTS.md manifest
 - Every topic file in an area is listed in the area's table
 - No AGENTS.md entries reference nonexistent files
 **Severity**: warn
-**Auto-fix potential**: Yes -- can regenerate the managed section between `<!-- dewey:kb:begin -->` and `<!-- dewey:kb:end -->` markers
+**Auto-fix potential**: Yes -- can regenerate the managed section between `<!-- dewey:knowledge-base:begin -->` and `<!-- dewey:knowledge-base:end -->` markers
 **Implementation**: Parse AGENTS.md for markdown link paths, compare against filesystem glob
 
-#### A4. `check_naming_conventions(kb_root)` -- NEW
+#### A4. `check_naming_conventions(knowledge_base_root)` -- NEW
 **Principle**: #6 Domain-Shaped Organization
 **Checks**:
 - Area directory names: lowercase, hyphens only, no spaces or underscores
@@ -97,7 +97,7 @@ The core opportunity: push the boundary of what Python can assert, auto-correct 
 **Auto-fix potential**: Yes -- can rename files (with git mv) to normalized form
 **Implementation**: Regex on `Path.name` for each discovered file
 
-#### A5. `check_proposal_integrity(kb_root)` -- NEW
+#### A5. `check_proposal_integrity(knowledge_base_root)` -- NEW
 **Principle**: #4 Collaborative Curation
 **Checks**:
 - Every file in `_proposals/` has `status: proposal` in frontmatter
@@ -134,7 +134,7 @@ def flesch_kincaid_grade(words, sentences, syllables):
     return 0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59
 ```
 
-#### B2. `check_duplicate_content(kb_root)` -- NEW
+#### B2. `check_duplicate_content(knowledge_base_root)` -- NEW
 **Principle**: #7 Right-Sized Scope, #12 Multiple Representations
 **Checks**:
 - No exact-duplicate paragraphs (40+ chars) across files (via md5 hash)
@@ -169,7 +169,7 @@ Both are O(n^2) but feasible for medium-sized KBs (50-200 files).
 
 ### Category C: Cross-File Consistency (Tier 1, warn severity)
 
-#### C1. `check_link_graph(kb_root)` -- NEW
+#### C1. `check_link_graph(knowledge_base_root)` -- NEW
 **Principle**: #6 Domain-Shaped Organization, #9 Progressive Disclosure
 **Checks**:
 - Orphaned files: `.md` files not linked from any other file (excluding entry points)
@@ -179,7 +179,7 @@ Both are O(n^2) but feasible for medium-sized KBs (50-200 files).
 **Auto-fix potential**: None (link placement requires judgment)
 **Implementation**: Build directed graph from all internal markdown links. Detect orphans via set difference. Check bidirectional edges for ref ↔ working pairs.
 
-#### C2. `check_curation_plan_sync(kb_root)` -- NEW
+#### C2. `check_curation_plan_sync(knowledge_base_root)` -- NEW
 **Principle**: #4 Collaborative Curation, #8 Empirical Feedback
 **Checks**:
 - Every `[x]` item in curation plan has a corresponding file on disk
@@ -189,7 +189,7 @@ Both are O(n^2) but feasible for medium-sized KBs (50-200 files).
 **Auto-fix potential**: Yes -- can update checkboxes to `[x]` for files that exist
 **Implementation**: Parse curation plan markdown checkboxes, extract topic names, compare against filesystem
 
-#### C3. `check_terminology_consistency(kb_root, glossary)` -- NEW
+#### C3. `check_terminology_consistency(knowledge_base_root, glossary)` -- NEW
 **Principle**: #2 Dual Audience, #6 Domain-Shaped Organization
 **Checks**:
 - Non-canonical term variants flagged against a configurable glossary
@@ -201,10 +201,10 @@ Both are O(n^2) but feasible for medium-sized KBs (50-200 files).
 
 ### Category D: Utilization Integration (Tier 1, warn severity)
 
-#### D1. `check_utilization_signals(kb_root)` -- NEW
+#### D1. `check_utilization_signals(knowledge_base_root)` -- NEW
 **Principle**: #8 Empirical Feedback
 **Checks**:
-- Flag files with 0 reads that have been in KB > 30 days
+- Flag files with 0 reads that have been in knowledge base > 30 days
 - Flag files with declining read trends (if history has 3+ snapshots)
 - This is a lighter version of `generate_recommendations` -- surfaces signals during regular health checks rather than requiring a separate recommendations run
 **Severity**: warn
@@ -276,7 +276,7 @@ The LLM is needed when the check requires:
 - **Source comparison**: Has the source material changed since last validation?
 - **Quality judgment**: Are the examples realistic and helpful, or contrived?
 - **Depth assessment**: Is this content genuinely working-level, or is it mislabeled overview?
-- **Relevance evaluation**: Should this topic be in the KB at all?
+- **Relevance evaluation**: Should this topic be in the knowledge base at all?
 
 ### New Tier 2 Triggers (Proposed)
 
@@ -291,7 +291,7 @@ The LLM is needed when the check requires:
 **Claude's role**: Determine if overlap is intentional (ref mirrors working) or accidental (copy-paste drift)
 
 #### T3. `trigger_scope_drift(file_path)` -- NEW
-**When**: File has many inline links to external topics not in the KB
+**When**: File has many inline links to external topics not in the knowledge base
 **Context**: external_link_count, linked_domains, file_word_count
 **Claude's role**: Assess if the file is trying to cover too broad a scope
 
@@ -312,22 +312,22 @@ dewey/skills/health/scripts/
 ├── sync_checks.py         # NEW: AGENTS.md sync, curation plan sync, index sync (move from validators)
 ├── tier2_triggers.py      # Keep existing
 ├── auto_fix.py            # NEW: conservative auto-correction functions
-├── check_kb.py            # Keep existing (orchestrator)
+├── check_knowledge_base.py            # Keep existing (orchestrator)
 ├── history.py             # Keep existing
 └── utilization.py         # Keep existing
 ```
 
-### 2. Add `--fix` Flag to check_kb.py
+### 2. Add `--fix` Flag to check_knowledge_base.py
 
 ```bash
 # Report only (default)
-python3 check_kb.py --kb-root /path/to/kb --both
+python3 check_knowledge_base.py --knowledge-base-root /path/to/kb --both
 
 # Report + auto-fix unambiguous issues
-python3 check_kb.py --kb-root /path/to/kb --both --fix
+python3 check_knowledge_base.py --knowledge-base-root /path/to/kb --both --fix
 
 # Dry-run: show what would be fixed without changing files
-python3 check_kb.py --kb-root /path/to/kb --both --fix --dry-run
+python3 check_knowledge_base.py --knowledge-base-root /path/to/kb --both --fix --dry-run
 ```
 
 ### 3. Return Format Extension
@@ -348,7 +348,7 @@ Current issue format works well. Add an optional `fix` field for auto-correctabl
 
 ### 4. Validator Registration Pattern
 
-As the validator count grows, consider a registry pattern for check_kb.py:
+As the validator count grows, consider a registry pattern for check_knowledge_base.py:
 
 ```python
 # Each validator module exports a list of check functions
@@ -425,7 +425,7 @@ TIER1_STRUCTURAL = [
 ## Remaining Unknowns
 
 - [ ] Should terminology consistency use a checked-in glossary file or auto-discovery? (Recommend: glossary file in `.dewey/glossary.json`, auto-discovery as optional Tier 2 trigger)
-- [ ] What readability thresholds are appropriate for the KB's actual domain? (Need to baseline current files before setting bounds)
+- [ ] What readability thresholds are appropriate for the knowledge base's actual domain? (Need to baseline current files before setting bounds)
 - [ ] Should link graph checks enforce bidirectional links for all pairs, or only ref ↔ working? (Recommend: only ref ↔ working for now)
 - [ ] How should auto-fix interact with git? (Recommend: `--fix` modifies files in-place, user reviews with `git diff` before committing)
 - [ ] Should duplicate detection compare across depths intentionally? (Working and ref for the same topic will naturally overlap -- need to exclude known pairs)
@@ -444,7 +444,7 @@ TIER1_STRUCTURAL = [
 - gotchas: Python 3.9 requires Optional[str] at runtime (not str | None). Scripts must be standalone with argparse. Never write to project directory in tests.
 </technical>
 <integration>
-- works_with: check_kb.py orchestrator, history.py for regression tracking, utilization.py for empirical feedback
+- works_with: check_knowledge_base.py orchestrator, history.py for regression tracking, utilization.py for empirical feedback
 - conflicts_with: Nothing -- all additive to existing architecture
 - alternatives: External tools (markdownlint, vale, textstat) but those violate stdlib-only constraint
 </integration>
@@ -456,7 +456,7 @@ TIER1_STRUCTURAL = [
 
 - Dewey codebase: `dewey/skills/health/scripts/validators.py` (9 existing validators)
 - Dewey codebase: `dewey/skills/health/scripts/tier2_triggers.py` (6 existing triggers)
-- Dewey codebase: `dewey/skills/health/scripts/check_kb.py` (orchestrator + recommendations)
+- Dewey codebase: `dewey/skills/health/scripts/check_knowledge_base.py` (orchestrator + recommendations)
 - Dewey codebase: `tests/skills/health/` (154 tests across 7 files)
 - Dewey codebase: `dewey/skills/health/references/design-principles.md` (12 principles)
 - Flesch-Kincaid formula: standard readability metric (Kincaid et al., 1975)

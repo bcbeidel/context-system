@@ -19,7 +19,7 @@ This runs `check_freshness` as part of Tier 1 validation and will flag files tha
 
 For the full freshness report, read each .md file under `docs/` (excluding `_proposals/` and other `_` prefixed directories) and extract:
 
-- File path (relative to KB root)
+- File path (relative to knowledge-base root)
 - `last_validated` date from frontmatter
 - `depth` from frontmatter
 - Domain area (parent directory name)

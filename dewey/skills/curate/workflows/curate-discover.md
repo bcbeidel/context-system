@@ -3,7 +3,7 @@ Help the user discover what knowledge domains to capture, scaffold the knowledge
 </objective>
 
 <required_reading>
-Load `${CLAUDE_PLUGIN_ROOT}/skills/curate/references/kb-spec-summary.md` for context on the knowledge base specification.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/curate/references/knowledge-base-spec-summary.md` for context on the knowledge base specification.
 </required_reading>
 
 <process>
@@ -66,7 +66,7 @@ Key principles for domain naming:
 
 ## Phase 4: Frame the Role
 
-Propose a role framing that captures who the KB serves:
+Propose a role framing that captures who the knowledge base serves:
 
 "It sounds like we're building a knowledge base for a **[Role Name]** -- someone who [brief description of what this role does and what success looks like].
 

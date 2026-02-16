@@ -204,7 +204,7 @@ The explosion of LLM-generated content has driven significant research into auto
 
 ### Triangulation in Research
 
-Triangulation -- using multiple independent sources/methods to verify findings -- is a foundational concept in qualitative research methodology. Four types apply to KB curation:
+Triangulation -- using multiple independent sources/methods to verify findings -- is a foundational concept in qualitative research methodology. Four types apply to knowledge-base curation:
 
 1. **Data triangulation**: Same claim verified across different source types (documentation, papers, practitioner content)
 2. **Methodological triangulation**: Multiple verification approaches (search, cite-check, expert review)
@@ -264,7 +264,7 @@ Triangulation -- using multiple independent sources/methods to verify findings -
 **Mitigation:** Present both perspectives. Use consensus scoring -- if 3/4 authoritative sources agree and 1 disagrees, note the majority view and the dissent. Never silently pick one side.
 
 ### Edge Case: Source Available But Changed
-**Problem:** A source URL works but the content has been updated since the KB entry was written.
+**Problem:** A source URL works but the content has been updated since the knowledge-base entry was written.
 **Mitigation:** This is what `trigger_source_drift()` is designed to catch. Record content hashes or key quotes at curation time to detect drift. Capture the "as of" date prominently.
 
 ## Current State & Trends
@@ -294,7 +294,7 @@ The trend is moving from "verify after writing" to embedding verification into t
 
 ## Remaining Unknowns
 
-- [ ] What's the optimal claim decomposition granularity for KB topics? Too fine = noise, too coarse = misses errors.
+- [ ] What's the optimal claim decomposition granularity for knowledge-base topics? Too fine = noise, too coarse = misses errors.
 - [ ] How to handle source evaluation for topics where all quality sources are behind paywalls?
 - [ ] What's the right threshold for consensus scoring in fast-moving vs stable domains?
 - [ ] Can source diversity requirements be quantified (e.g., minimum 2 independent organizations), or do they need to be contextual?
@@ -344,7 +344,7 @@ The trend is moving from "verify after writing" to embedding verification into t
 
 <claude_context>
 <application>
-- when_to_use: Any time content is being curated into the KB from external sources, and any time existing content is being validated for accuracy
+- when_to_use: Any time content is being curated into the knowledge base from external sources, and any time existing content is being validated for accuracy
 - when_not_to_use: Internal documentation, user-generated notes, or content where "source" is the user's own experience
 - prerequisites: Web search capability, ability to fetch and analyze URLs, structured source metadata in frontmatter
 </application>

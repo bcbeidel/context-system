@@ -33,7 +33,7 @@ All tasks were completed in order. Notable changes from the original plan during
 **Step 1: Write the failing test**
 
 ```python
-"""Tests for KB content templates."""
+"""Tests for knowledge-base content templates."""
 import unittest
 from pathlib import Path
 import sys
@@ -183,7 +183,7 @@ Expected: FAIL — `templates` module does not exist
 ```python
 """Content templates for the knowledge base specification.
 
-Renders markdown files conforming to the KB spec defined in
+Renders markdown files conforming to the knowledge-base spec defined in
 docs/plans/2026-02-14-knowledge-base-spec-design.md.
 """
 from datetime import date
@@ -234,7 +234,7 @@ def render_index_md(role_name: str, domain_areas: list[dict]) -> str:
             sections.append(f"- [{area['name']}]({dirname}/overview.md)")
         sections.append("")
     else:
-        sections += ["<!-- Domain areas will be listed here as the KB grows. -->", ""]
+        sections += ["<!-- Domain areas will be listed here as the knowledge base grows. -->", ""]
     return "\n".join(sections)
 
 
@@ -403,7 +403,7 @@ Expected: All PASS
 
 ```bash
 git add skills/init/scripts/templates.py tests/skills/init/test_templates.py
-git commit -m "feat: add KB content templates module"
+git commit -m "feat: add knowledge-base content templates module"
 ```
 
 ---
@@ -417,7 +417,7 @@ git commit -m "feat: add KB content templates module"
 **Step 1: Write the failing test**
 
 ```python
-"""Tests for KB scaffolding."""
+"""Tests for knowledge-base scaffolding."""
 import unittest
 import tempfile
 import shutil
@@ -425,7 +425,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "skills" / "init" / "scripts"))
-from scaffold import scaffold_kb
+from scaffold import scaffold_knowledge_base
 
 
 class TestScaffoldKb(unittest.TestCase):
@@ -436,34 +436,34 @@ class TestScaffoldKb(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def test_creates_agents_md(self):
-        scaffold_kb(self.tmpdir, role_name="Paid Media Analyst")
+        scaffold_knowledge_base(self.tmpdir, role_name="Paid Media Analyst")
         self.assertTrue((self.tmpdir / "AGENTS.md").exists())
 
     def test_creates_knowledge_directory(self):
-        scaffold_kb(self.tmpdir, role_name="Paid Media Analyst")
+        scaffold_knowledge_base(self.tmpdir, role_name="Paid Media Analyst")
         self.assertTrue((self.tmpdir / "knowledge").is_dir())
 
     def test_creates_index_md(self):
-        scaffold_kb(self.tmpdir, role_name="Paid Media Analyst")
+        scaffold_knowledge_base(self.tmpdir, role_name="Paid Media Analyst")
         self.assertTrue((self.tmpdir / "knowledge" / "index.md").exists())
 
     def test_creates_proposals_directory(self):
-        scaffold_kb(self.tmpdir, role_name="Paid Media Analyst")
+        scaffold_knowledge_base(self.tmpdir, role_name="Paid Media Analyst")
         self.assertTrue((self.tmpdir / "knowledge" / "_proposals").is_dir())
 
     def test_creates_dewey_directories(self):
-        scaffold_kb(self.tmpdir, role_name="Paid Media Analyst")
+        scaffold_knowledge_base(self.tmpdir, role_name="Paid Media Analyst")
         self.assertTrue((self.tmpdir / ".dewey" / "health").is_dir())
         self.assertTrue((self.tmpdir / ".dewey" / "history").is_dir())
         self.assertTrue((self.tmpdir / ".dewey" / "utilization").is_dir())
 
     def test_agents_md_contains_role(self):
-        scaffold_kb(self.tmpdir, role_name="Data Scientist")
+        scaffold_knowledge_base(self.tmpdir, role_name="Data Scientist")
         content = (self.tmpdir / "AGENTS.md").read_text()
         self.assertIn("Data Scientist", content)
 
     def test_creates_domain_area_with_overview(self):
-        scaffold_kb(
+        scaffold_knowledge_base(
             self.tmpdir,
             role_name="Paid Media Analyst",
             domain_areas=["Campaign Management"],
@@ -473,7 +473,7 @@ class TestScaffoldKb(unittest.TestCase):
         self.assertTrue((area_dir / "overview.md").exists())
 
     def test_agents_md_under_100_lines(self):
-        scaffold_kb(
+        scaffold_knowledge_base(
             self.tmpdir,
             role_name="Paid Media Analyst",
             domain_areas=["Area One", "Area Two", "Area Three"],
@@ -484,12 +484,12 @@ class TestScaffoldKb(unittest.TestCase):
 
     def test_does_not_overwrite_existing_agents_md(self):
         (self.tmpdir / "AGENTS.md").write_text("existing content")
-        scaffold_kb(self.tmpdir, role_name="Paid Media Analyst")
+        scaffold_knowledge_base(self.tmpdir, role_name="Paid Media Analyst")
         content = (self.tmpdir / "AGENTS.md").read_text()
         self.assertEqual(content, "existing content")
 
     def test_scaffold_returns_summary(self):
-        result = scaffold_kb(self.tmpdir, role_name="Paid Media Analyst")
+        result = scaffold_knowledge_base(self.tmpdir, role_name="Paid Media Analyst")
         self.assertIn("created", result)
 
 
@@ -507,7 +507,7 @@ Expected: FAIL — `scaffold` module does not exist
 ```python
 """Scaffold a new knowledge base directory structure.
 
-Creates the directory layout and template files defined by the KB spec.
+Creates the directory layout and template files defined by the knowledge-base spec.
 Will not overwrite existing files.
 """
 from pathlib import Path
@@ -521,16 +521,16 @@ from templates import (
 )
 
 
-def scaffold_kb(
+def scaffold_knowledge_base(
     target_dir: Path,
     role_name: str,
     domain_areas: list[str] | None = None,
 ) -> str:
-    """Create KB directory structure and template files.
+    """Create knowledge-base directory structure and template files.
 
     Args:
         target_dir: Root directory for the knowledge base.
-        role_name: The role this KB serves (e.g., "Paid Media Analyst").
+        role_name: The role this knowledge base serves (e.g., "Paid Media Analyst").
         domain_areas: Optional list of domain area names to pre-create.
 
     Returns:
@@ -617,7 +617,7 @@ Expected: All PASS
 
 ```bash
 git add skills/init/scripts/scaffold.py tests/skills/init/test_scaffold.py
-git commit -m "feat: add KB scaffold script"
+git commit -m "feat: add knowledge-base scaffold script"
 ```
 
 ---
@@ -628,7 +628,7 @@ git commit -m "feat: add KB scaffold script"
 - Create: `skills/init/SKILL.md`
 - Create: `skills/init/workflows/init-empty.md`
 - Create: `skills/init/workflows/init-from-role.md`
-- Create: `skills/init/references/kb-spec-summary.md`
+- Create: `skills/init/references/knowledge-base-spec-summary.md`
 
 **Step 1: Create SKILL.md**
 
@@ -641,12 +641,12 @@ description: Bootstrap a new knowledge base with the standard directory structur
 <essential_principles>
 ## What This Skill Does
 
-Creates a new knowledge base conforming to the KB specification. Scaffolds the directory structure, generates AGENTS.md (persona + manifest), index.md (human TOC), and optionally pre-creates domain areas based on a role description.
+Creates a new knowledge base conforming to the knowledge-base specification. Scaffolds the directory structure, generates AGENTS.md (persona + manifest), index.md (human TOC), and optionally pre-creates domain areas based on a role description.
 
 ## Core Workflow
 
-1. **Determine target directory** - Where the KB will live (default: current directory)
-2. **Get role name** - What role this KB serves
+1. **Determine target directory** - Where the knowledge base will live (default: current directory)
+2. **Get role name** - What role this knowledge base serves
 3. **Python scaffolds structure** - Creates directories and template files
 4. **Claude proposes domain areas** (if from-role) - Suggests initial organization based on the role
 5. **Reports what was created** - Summary of files and directories
@@ -654,7 +654,7 @@ Creates a new knowledge base conforming to the KB specification. Scaffolds the d
 ## Design Philosophy
 
 - **Safe by default** - Never overwrites existing files
-- **Minimal viable KB** - Scaffolds the structure, not the content
+- **Minimal viable knowledge base** - Scaffolds the structure, not the content
 - **Templates guide quality** - Every generated file follows the content format spec
 - **Human refines** - The scaffold is a starting point, not a finished product
 
@@ -667,7 +667,7 @@ Creates a new knowledge base conforming to the KB specification. Scaffolds the d
 <intake>
 Setting up a new knowledge base.
 
-**Default behavior:** Scaffold an empty KB structure with templates.
+**Default behavior:** Scaffold an empty knowledge-base structure with templates.
 **From role:** Use `--role "Role Name"` to have Claude propose initial domain areas.
 
 If no `$ARGUMENTS` provided, ask for the role name.
@@ -691,7 +691,7 @@ All workflows in `workflows/`:
 
 | Workflow | Purpose |
 |----------|---------|
-| init-empty.md | Scaffold empty KB structure with templates |
+| init-empty.md | Scaffold empty knowledge-base structure with templates |
 | init-from-role.md | Propose domain areas from role description, then scaffold |
 </workflows_index>
 
@@ -702,7 +702,7 @@ All references in `references/`:
 
 | Reference | Content |
 |-----------|---------|
-| kb-spec-summary.md | Summary of the KB specification principles and structure |
+| knowledge-base-spec-summary.md | Summary of the knowledge-base specification principles and structure |
 </references_index>
 
 <scripts_integration>
@@ -717,7 +717,7 @@ Located in `scripts/`:
 - Returns summary of what was created
 
 **templates.py** - Content template rendering
-- Renders all KB file types (AGENTS.md, index.md, overview.md, topic.md, topic.ref.md, proposal.md)
+- Renders all knowledge-base file types (AGENTS.md, index.md, overview.md, topic.md, topic.ref.md, proposal.md)
 - Includes correct frontmatter with today's date
 - Follows the content format spec
 
@@ -729,7 +729,7 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <dir> --ro
 
 <success_criteria>
 Init is successful when:
-- ✅ Directory structure matches the KB spec
+- ✅ Directory structure matches the knowledge-base spec
 - ✅ AGENTS.md exists with role name and manifest structure
 - ✅ knowledge/index.md exists with TOC structure
 - ✅ knowledge/_proposals/ directory exists
@@ -747,7 +747,7 @@ Scaffold an empty knowledge base with the standard directory structure and templ
 </objective>
 
 <required_reading>
-Load `references/kb-spec-summary.md` for context on the KB specification.
+Load `references/knowledge-base-spec-summary.md` for context on the knowledge-base specification.
 </required_reading>
 
 <process>
@@ -755,7 +755,7 @@ Load `references/kb-spec-summary.md` for context on the KB specification.
 
 If `$ARGUMENTS` contains a path, use that. Otherwise use the current working directory.
 
-Confirm with user: "I'll create a knowledge base in `<directory>`. What role does this KB serve? (e.g., 'Paid Media Analyst', 'Platform Engineer')"
+Confirm with user: "I'll create a knowledge base in `<directory>`. What role does this knowledge base serve? (e.g., 'Paid Media Analyst', 'Platform Engineer')"
 
 ## Step 2: Run scaffold script
 
@@ -768,7 +768,7 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <directory
 Show the user what was created and suggest next steps:
 - "Use `/dewey:curate add` to start adding topics"
 - "Edit AGENTS.md to refine the persona definition"
-- "Create domain area directories as your KB takes shape"
+- "Create domain area directories as your knowledge base takes shape"
 </process>
 
 <success_criteria>
@@ -787,7 +787,7 @@ Propose initial domain areas based on a role description, then scaffold the know
 </objective>
 
 <required_reading>
-Load `references/kb-spec-summary.md` for context on the KB specification.
+Load `references/knowledge-base-spec-summary.md` for context on the knowledge-base specification.
 </required_reading>
 
 <process>
@@ -830,11 +830,11 @@ Show what was created. For each domain area, note the overview.md that was gener
 - Directory structure created with domain area directories
 - Each domain area has an overview.md
 - AGENTS.md manifest includes all domain areas
-- User has clear next steps for populating the KB
+- User has clear next steps for populating the knowledge base
 </success_criteria>
 ```
 
-**Step 4: Create reference kb-spec-summary.md**
+**Step 4: Create reference knowledge-base-spec-summary.md**
 
 ```markdown
 # Knowledge Base Specification Summary
@@ -979,7 +979,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     areas = [a.strip() for a in args.areas.split(",") if a.strip()] if args.areas else []
-    result = scaffold_kb(Path(args.target), args.role, areas)
+    result = scaffold_knowledge_base(Path(args.target), args.role, areas)
     print(result)
 ```
 
@@ -1024,7 +1024,7 @@ from create_topic import create_topic
 class TestCreateTopic(unittest.TestCase):
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
-        # Set up a minimal KB structure
+        # Set up a minimal knowledge-base structure
         (self.tmpdir / "knowledge" / "campaign-management").mkdir(parents=True)
         (self.tmpdir / "knowledge" / "_proposals").mkdir(parents=True)
 
@@ -1033,7 +1033,7 @@ class TestCreateTopic(unittest.TestCase):
 
     def test_creates_topic_file(self):
         create_topic(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             area="campaign-management",
             topic_name="Budget Allocation",
             relevance="How to distribute budget across campaigns",
@@ -1043,7 +1043,7 @@ class TestCreateTopic(unittest.TestCase):
 
     def test_creates_reference_file(self):
         create_topic(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             area="campaign-management",
             topic_name="Budget Allocation",
             relevance="How to distribute budget",
@@ -1053,7 +1053,7 @@ class TestCreateTopic(unittest.TestCase):
 
     def test_topic_has_correct_depth(self):
         create_topic(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             area="campaign-management",
             topic_name="Budget Allocation",
             relevance="How to distribute budget",
@@ -1063,7 +1063,7 @@ class TestCreateTopic(unittest.TestCase):
 
     def test_ref_has_correct_depth(self):
         create_topic(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             area="campaign-management",
             topic_name="Budget Allocation",
             relevance="How to distribute budget",
@@ -1075,7 +1075,7 @@ class TestCreateTopic(unittest.TestCase):
         topic_path = self.tmpdir / "knowledge" / "campaign-management" / "budget-allocation.md"
         topic_path.write_text("existing content")
         create_topic(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             area="campaign-management",
             topic_name="Budget Allocation",
             relevance="How to distribute budget",
@@ -1085,7 +1085,7 @@ class TestCreateTopic(unittest.TestCase):
     def test_raises_if_area_does_not_exist(self):
         with self.assertRaises(FileNotFoundError):
             create_topic(
-                kb_root=self.tmpdir,
+                knowledge_base_root=self.tmpdir,
                 area="nonexistent-area",
                 topic_name="Topic",
                 relevance="Relevance",
@@ -1093,7 +1093,7 @@ class TestCreateTopic(unittest.TestCase):
 
     def test_returns_summary(self):
         result = create_topic(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             area="campaign-management",
             topic_name="Budget Allocation",
             relevance="How to distribute budget",
@@ -1126,7 +1126,7 @@ from templates import render_topic_md, render_topic_ref_md
 
 
 def create_topic(
-    kb_root: Path,
+    knowledge_base_root: Path,
     area: str,
     topic_name: str,
     relevance: str,
@@ -1134,7 +1134,7 @@ def create_topic(
     """Create a new topic with working and reference files.
 
     Args:
-        kb_root: Root of the knowledge base.
+        knowledge_base_root: Root of the knowledge base.
         area: Domain area directory name (e.g., "campaign-management").
         topic_name: Human-readable topic name (e.g., "Budget Allocation").
         relevance: One-line relevance statement.
@@ -1145,7 +1145,7 @@ def create_topic(
     Raises:
         FileNotFoundError: If the domain area directory doesn't exist.
     """
-    area_dir = kb_root / "knowledge" / area
+    area_dir = knowledge_base_root / "knowledge" / area
     if not area_dir.is_dir():
         raise FileNotFoundError(f"Domain area not found: {area_dir}")
 
@@ -1155,12 +1155,12 @@ def create_topic(
     topic_path = area_dir / f"{slug}.md"
     if not topic_path.exists():
         topic_path.write_text(render_topic_md(topic_name, relevance))
-        created.append(str(topic_path.relative_to(kb_root)))
+        created.append(str(topic_path.relative_to(knowledge_base_root)))
 
     ref_path = area_dir / f"{slug}.ref.md"
     if not ref_path.exists():
         ref_path.write_text(render_topic_ref_md(topic_name, f"Quick reference for {topic_name.lower()}"))
-        created.append(str(ref_path.relative_to(kb_root)))
+        created.append(str(ref_path.relative_to(knowledge_base_root)))
 
     if created:
         return f"Created:\n" + "\n".join(f"  {c}" for c in created)
@@ -1174,14 +1174,14 @@ def _slugify(name: str) -> str:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Create a new KB topic.")
-    parser.add_argument("--kb-root", required=True, help="KB root directory")
+    parser = argparse.ArgumentParser(description="Create a new knowledge-base topic.")
+    parser.add_argument("--knowledge-base-root", required=True, help="Knowledge base root directory")
     parser.add_argument("--area", required=True, help="Domain area directory name")
     parser.add_argument("--topic", required=True, help="Topic name")
     parser.add_argument("--relevance", required=True, help="One-line relevance statement")
     args = parser.parse_args()
 
-    result = create_topic(Path(args.kb_root), args.area, args.topic, args.relevance)
+    result = create_topic(Path(args.knowledge_base_root), args.area, args.topic, args.relevance)
     print(result)
 ```
 
@@ -1232,7 +1232,7 @@ class TestCreateProposal(unittest.TestCase):
 
     def test_creates_proposal_file(self):
         create_proposal(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             topic_name="New Topic",
             relevance="Why this matters",
             proposed_by="human",
@@ -1243,7 +1243,7 @@ class TestCreateProposal(unittest.TestCase):
 
     def test_proposal_has_status(self):
         create_proposal(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             topic_name="New Topic",
             relevance="Why this matters",
             proposed_by="agent",
@@ -1287,7 +1287,7 @@ class TestPromoteProposal(unittest.TestCase):
 
     def test_moves_proposal_to_area(self):
         promote_proposal(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             proposal_name="budget-tips",
             target_area="campaign-management",
         )
@@ -1296,7 +1296,7 @@ class TestPromoteProposal(unittest.TestCase):
 
     def test_removes_proposal_status_from_frontmatter(self):
         promote_proposal(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             proposal_name="budget-tips",
             target_area="campaign-management",
         )
@@ -1307,7 +1307,7 @@ class TestPromoteProposal(unittest.TestCase):
 
     def test_removes_original_proposal(self):
         promote_proposal(
-            kb_root=self.tmpdir,
+            knowledge_base_root=self.tmpdir,
             proposal_name="budget-tips",
             target_area="campaign-management",
         )
@@ -1317,7 +1317,7 @@ class TestPromoteProposal(unittest.TestCase):
     def test_raises_if_proposal_not_found(self):
         with self.assertRaises(FileNotFoundError):
             promote_proposal(
-                kb_root=self.tmpdir,
+                knowledge_base_root=self.tmpdir,
                 proposal_name="nonexistent",
                 target_area="campaign-management",
             )
@@ -1325,7 +1325,7 @@ class TestPromoteProposal(unittest.TestCase):
     def test_raises_if_target_area_not_found(self):
         with self.assertRaises(FileNotFoundError):
             promote_proposal(
-                kb_root=self.tmpdir,
+                knowledge_base_root=self.tmpdir,
                 proposal_name="budget-tips",
                 target_area="nonexistent-area",
             )
@@ -1343,7 +1343,7 @@ Expected: FAIL — modules don't exist
 **Step 4: Implement propose.py**
 
 ```python
-"""Create proposals for new KB content."""
+"""Create proposals for new knowledge-base content."""
 from pathlib import Path
 import sys
 
@@ -1352,14 +1352,14 @@ from templates import render_proposal_md
 
 
 def create_proposal(
-    kb_root: Path,
+    knowledge_base_root: Path,
     topic_name: str,
     relevance: str,
     proposed_by: str,
     rationale: str,
 ) -> str:
     """Create a proposal in _proposals/."""
-    proposals_dir = kb_root / "knowledge" / "_proposals"
+    proposals_dir = knowledge_base_root / "knowledge" / "_proposals"
     if not proposals_dir.is_dir():
         raise FileNotFoundError(f"Proposals directory not found: {proposals_dir}")
 
@@ -1367,24 +1367,24 @@ def create_proposal(
     proposal_path = proposals_dir / f"{slug}.md"
 
     if proposal_path.exists():
-        return f"Proposal already exists: {proposal_path.relative_to(kb_root)}"
+        return f"Proposal already exists: {proposal_path.relative_to(knowledge_base_root)}"
 
     proposal_path.write_text(render_proposal_md(topic_name, relevance, proposed_by, rationale))
-    return f"Created proposal: {proposal_path.relative_to(kb_root)}"
+    return f"Created proposal: {proposal_path.relative_to(knowledge_base_root)}"
 
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Create a KB proposal.")
-    parser.add_argument("--kb-root", required=True)
+    parser = argparse.ArgumentParser(description="Create a knowledge-base proposal.")
+    parser.add_argument("--knowledge-base-root", required=True)
     parser.add_argument("--topic", required=True)
     parser.add_argument("--relevance", required=True)
     parser.add_argument("--proposed-by", default="human")
     parser.add_argument("--rationale", required=True)
     args = parser.parse_args()
 
-    result = create_proposal(Path(args.kb_root), args.topic, args.relevance, args.proposed_by, args.rationale)
+    result = create_proposal(Path(args.knowledge_base_root), args.topic, args.relevance, args.proposed_by, args.rationale)
     print(result)
 ```
 
@@ -1397,7 +1397,7 @@ from pathlib import Path
 
 
 def promote_proposal(
-    kb_root: Path,
+    knowledge_base_root: Path,
     proposal_name: str,
     target_area: str,
 ) -> str:
@@ -1406,11 +1406,11 @@ def promote_proposal(
     Removes proposal-specific frontmatter (status, proposed_by, rationale)
     and moves the file to the target domain area.
     """
-    proposal_path = kb_root / "knowledge" / "_proposals" / f"{proposal_name}.md"
+    proposal_path = knowledge_base_root / "knowledge" / "_proposals" / f"{proposal_name}.md"
     if not proposal_path.exists():
         raise FileNotFoundError(f"Proposal not found: {proposal_path}")
 
-    target_dir = kb_root / "knowledge" / target_area
+    target_dir = knowledge_base_root / "knowledge" / target_area
     if not target_dir.is_dir():
         raise FileNotFoundError(f"Target area not found: {target_dir}")
 
@@ -1453,13 +1453,13 @@ def _strip_proposal_frontmatter(content: str) -> str:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Promote a KB proposal.")
-    parser.add_argument("--kb-root", required=True)
+    parser = argparse.ArgumentParser(description="Promote a knowledge-base proposal.")
+    parser.add_argument("--knowledge-base-root", required=True)
     parser.add_argument("--proposal", required=True)
     parser.add_argument("--target-area", required=True)
     args = parser.parse_args()
 
-    result = promote_proposal(Path(args.kb_root), args.proposal, args.target_area)
+    result = promote_proposal(Path(args.knowledge_base_root), args.proposal, args.target_area)
     print(result)
 ```
 
@@ -1525,7 +1525,7 @@ git commit -m "feat: add /dewey:curate skill with workflows"
 Test each deterministic check individually:
 
 ```python
-"""Tests for Tier 1 deterministic KB validators."""
+"""Tests for Tier 1 deterministic knowledge-base validators."""
 import unittest
 import tempfile
 import shutil
@@ -1666,7 +1666,7 @@ Expected: All PASS
 
 ```bash
 git add skills/health/scripts/validators.py tests/skills/health/test_validators.py
-git commit -m "feat: add Tier 1 deterministic KB validators"
+git commit -m "feat: add Tier 1 deterministic knowledge-base validators"
 ```
 
 ---
@@ -1674,15 +1674,15 @@ git commit -m "feat: add Tier 1 deterministic KB validators"
 ### Task 9: Create health check runner
 
 **Files:**
-- Create: `skills/health/scripts/check_kb.py`
-- Test: `tests/skills/health/test_check_kb.py`
+- Create: `skills/health/scripts/check_knowledge_base.py`
+- Test: `tests/skills/health/test_check_knowledge_base.py`
 
 **Step 1: Write failing tests**
 
-Test the runner that orchestrates all validators across a KB:
+Test the runner that orchestrates all validators across a knowledge base:
 
 ```python
-"""Tests for KB health check runner."""
+"""Tests for knowledge-base health check runner."""
 import unittest
 import tempfile
 import shutil
@@ -1691,13 +1691,13 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "skills" / "health" / "scripts"))
 
-from check_kb import run_health_check
+from check_knowledge_base import run_health_check
 
 
 class TestRunHealthCheck(unittest.TestCase):
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
-        # Scaffold a minimal KB
+        # Scaffold a minimal knowledge base
         (self.tmpdir / "knowledge" / "test-area").mkdir(parents=True)
         (self.tmpdir / "knowledge" / "_proposals").mkdir(parents=True)
         (self.tmpdir / "AGENTS.md").write_text("# Role: Test\n")
@@ -1744,8 +1744,8 @@ Following the same TDD pattern. The runner:
 - Outputs JSON for Claude to interpret
 
 ```bash
-git add skills/health/scripts/check_kb.py tests/skills/health/test_check_kb.py
-git commit -m "feat: add KB health check runner"
+git add skills/health/scripts/check_knowledge_base.py tests/skills/health/test_check_knowledge_base.py
+git commit -m "feat: add knowledge-base health check runner"
 ```
 
 ---
@@ -1774,7 +1774,7 @@ Routing:
 
 **Step 2: Create workflows**
 
-- `health-check.md` — Runs `check_kb.py`, Claude formats the structured output into a readable report with priorities.
+- `health-check.md` — Runs `check_knowledge_base.py`, Claude formats the structured output into a readable report with priorities.
 - `health-audit.md` — Runs Tier 1 checks first. For flagged items, Claude performs Tier 2 LLM assessment (source drift, depth accuracy, "why" quality, concrete example quality). Outputs combined report.
 - `health-review.md` — Runs Tier 1 + 2, then surfaces Tier 3 items as a decision queue: "These items need your judgment: [list]. Would you like to go through them?"
 - `health-coverage.md` — Parses AGENTS.md for responsibilities, compares against knowledge/ contents. Reports gaps and orphans.
@@ -1805,7 +1805,7 @@ Update the plugin manifest to register the three new skills. Follow the existing
 
 ```bash
 git add dewey/.claude-plugin/plugin.json
-git commit -m "feat: register kb skills in plugin manifest"
+git commit -m "feat: register knowledge-base skills in plugin manifest"
 ```
 
 ---
@@ -1817,10 +1817,10 @@ git commit -m "feat: register kb skills in plugin manifest"
 
 **Step 1: Write an end-to-end test**
 
-Test the full lifecycle: init a KB, add a topic, create a proposal, promote it, run health check.
+Test the full lifecycle: init a knowledge base, add a topic, create a proposal, promote it, run health check.
 
 ```python
-"""End-to-end test for KB lifecycle."""
+"""End-to-end test for knowledge-base lifecycle."""
 import unittest
 import tempfile
 import shutil
@@ -1832,11 +1832,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skills" / "init" /
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skills" / "curate" / "scripts"))
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skills" / "health" / "scripts"))
 
-from scaffold import scaffold_kb
+from scaffold import scaffold_knowledge_base
 from create_topic import create_topic
 from propose import create_proposal
 from promote import promote_proposal
-from check_kb import run_health_check
+from check_knowledge_base import run_health_check
 
 
 class TestKBLifecycle(unittest.TestCase):
@@ -1848,7 +1848,7 @@ class TestKBLifecycle(unittest.TestCase):
 
     def test_full_lifecycle(self):
         # 1. Init
-        scaffold_kb(self.tmpdir, "Test Analyst", ["Domain A"])
+        scaffold_knowledge_base(self.tmpdir, "Test Analyst", ["Domain A"])
 
         # 2. Add topic
         create_topic(self.tmpdir, "domain-a", "First Topic", "Testing the lifecycle")
@@ -1877,7 +1877,7 @@ if __name__ == "__main__":
 
 ```bash
 git add tests/integration/test_kb_lifecycle.py
-git commit -m "test: add end-to-end KB lifecycle integration test"
+git commit -m "test: add end-to-end knowledge-base lifecycle integration test"
 ```
 
 ---

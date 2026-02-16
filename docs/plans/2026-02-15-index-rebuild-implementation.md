@@ -15,12 +15,12 @@
 `index.md` is a structural file (table of contents), not a knowledge topic. It should not be subject to frontmatter, section ordering, size bounds, source URL, or freshness checks.
 
 **Files:**
-- Modify: `dewey/skills/health/scripts/check_kb.py:41-55`
-- Test: `tests/skills/health/test_check_kb.py`
+- Modify: `dewey/skills/health/scripts/check_knowledge_base.py:41-55`
+- Test: `tests/skills/health/test_check_knowledge_base.py`
 
 **Step 1: Write the failing test**
 
-Add to `tests/skills/health/test_check_kb.py`:
+Add to `tests/skills/health/test_check_knowledge_base.py`:
 
 ```python
 class TestIndexMdExclusion(unittest.TestCase):
@@ -47,7 +47,7 @@ class TestIndexMdExclusion(unittest.TestCase):
         self.assertEqual(fail_messages, [], f"index.md should not trigger failures: {fail_messages}")
 
     def test_discover_md_files_excludes_index(self):
-        from check_kb import _discover_md_files
+        from check_knowledge_base import _discover_md_files
         files = _discover_md_files(self.tmpdir, "docs")
         filenames = [f.name for f in files]
         self.assertNotIn("index.md", filenames)
@@ -55,17 +55,17 @@ class TestIndexMdExclusion(unittest.TestCase):
 
 **Step 2: Run test to verify it fails**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestIndexMdExclusion -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestIndexMdExclusion -v`
 Expected: FAIL — `_discover_md_files` currently returns `index.md`, so missing frontmatter causes a fail.
 
 **Step 3: Modify `_discover_md_files` to exclude index.md**
 
-In `dewey/skills/health/scripts/check_kb.py`, update the `_discover_md_files` function:
+In `dewey/skills/health/scripts/check_knowledge_base.py`, update the `_discover_md_files` function:
 
 ```python
-def _discover_md_files(kb_root: Path, knowledge_dir_name: str = "docs") -> list[Path]:
+def _discover_md_files(knowledge_base_root: Path, knowledge_dir_name: str = "docs") -> list[Path]:
     """Return all .md files under the knowledge directory, excluding _proposals/ and index.md."""
-    knowledge_dir = kb_root / knowledge_dir_name
+    knowledge_dir = knowledge_base_root / knowledge_dir_name
     if not knowledge_dir.is_dir():
         return []
 
@@ -85,7 +85,7 @@ def _discover_md_files(kb_root: Path, knowledge_dir_name: str = "docs") -> list[
 
 **Step 4: Run test to verify it passes**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestIndexMdExclusion -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestIndexMdExclusion -v`
 Expected: PASS
 
 **Step 5: Run full test suite**
@@ -96,7 +96,7 @@ Expected: All pass. Existing tests should be unaffected because they don't creat
 **Step 6: Commit**
 
 ```bash
-git add dewey/skills/health/scripts/check_kb.py tests/skills/health/test_check_kb.py
+git add dewey/skills/health/scripts/check_knowledge_base.py tests/skills/health/test_check_knowledge_base.py
 git commit -m "Exclude index.md from per-file health validators
 
 index.md is a structural file (table of contents), not a knowledge topic.
@@ -386,7 +386,7 @@ Add a new `_init_scripts` path setup to import from health scripts (for `parse_f
 - Move it to a shared location (too big a refactor)
 - Import it from health scripts path
 
-Best approach: Add the health scripts path to sys.path at the top of scaffold.py, similar to how check_kb.py adds init scripts. OR: write a minimal frontmatter parser inline since we only need `depth` and the `# Heading`.
+Best approach: Add the health scripts path to sys.path at the top of scaffold.py, similar to how check_knowledge_base.py adds init scripts. OR: write a minimal frontmatter parser inline since we only need `depth` and the `# Heading`.
 
 Actually, `parse_frontmatter` is simple and we only need depth + heading. Let's write a focused helper in scaffold.py:
 
@@ -429,13 +429,13 @@ def _read_topic_metadata(file_path: Path) -> dict:
     return {"name": name, "depth": depth}
 
 
-def _discover_index_data(kb_root: Path, knowledge_dir_name: str = "docs") -> list[dict]:
+def _discover_index_data(knowledge_base_root: Path, knowledge_dir_name: str = "docs") -> list[dict]:
     """Scan the knowledge directory and return area/topic data for index.md.
 
     Returns list of ``{"name": str, "dirname": str, "topics": [...]}``.
     Topics exclude overview.md and .ref.md files.
     """
-    knowledge_dir = kb_root / knowledge_dir_name
+    knowledge_dir = knowledge_base_root / knowledge_dir_name
     if not knowledge_dir.is_dir():
         return []
 
@@ -501,7 +501,7 @@ and _proposals/."
 
 ### Task 4: Wire index rebuild into scaffold and add CLI entry point
 
-Update `scaffold_kb()` to use `_discover_index_data` when regenerating `index.md`. Add a `--rebuild-index` CLI flag so curate workflows can trigger a rebuild with one Python command.
+Update `scaffold_knowledge_base()` to use `_discover_index_data` when regenerating `index.md`. Add a `--rebuild-index` CLI flag so curate workflows can trigger a rebuild with one Python command.
 
 **Files:**
 - Modify: `dewey/skills/init/scripts/scaffold.py:248-254` and CLI section
@@ -513,7 +513,7 @@ Add to `tests/skills/init/test_scaffold.py`:
 
 ```python
 class TestScaffoldIndexIncludesTopics(unittest.TestCase):
-    """scaffold_kb regenerates index.md with discovered topics."""
+    """scaffold_knowledge_base regenerates index.md with discovered topics."""
 
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
@@ -523,18 +523,18 @@ class TestScaffoldIndexIncludesTopics(unittest.TestCase):
 
     def test_index_md_includes_topics_on_reinit(self):
         """After adding topic files, re-scaffold picks them up in index.md."""
-        scaffold_kb(self.tmpdir, "Dev", domain_areas=["Testing"])
+        scaffold_knowledge_base(self.tmpdir, "Dev", domain_areas=["Testing"])
         # Manually create a topic file (simulating curate workflow)
         topic = self.tmpdir / "docs" / "testing" / "unit-testing.md"
         topic.write_text("---\nsources:\n  - url: https://example.com\n    title: Ex\nlast_validated: 2026-01-15\nrelevance: core\ndepth: working\n---\n# Unit Testing\n")
         # Re-scaffold
-        scaffold_kb(self.tmpdir, "Dev", domain_areas=["Testing"])
+        scaffold_knowledge_base(self.tmpdir, "Dev", domain_areas=["Testing"])
         index = (self.tmpdir / "docs" / "index.md").read_text()
         self.assertIn("Unit Testing", index)
         self.assertIn("unit-testing.md", index)
 
     def test_index_md_has_no_frontmatter(self):
-        scaffold_kb(self.tmpdir, "Dev", domain_areas=["Testing"])
+        scaffold_knowledge_base(self.tmpdir, "Dev", domain_areas=["Testing"])
         index = (self.tmpdir / "docs" / "index.md").read_text()
         self.assertFalse(index.startswith("---"))
 
@@ -544,7 +544,7 @@ class TestRebuildIndex(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = Path(tempfile.mkdtemp())
-        scaffold_kb(self.tmpdir, "Dev", domain_areas=["Testing"])
+        scaffold_knowledge_base(self.tmpdir, "Dev", domain_areas=["Testing"])
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -569,7 +569,7 @@ class TestRebuildIndex(unittest.TestCase):
 Run: `python3 -m pytest tests/skills/init/test_scaffold.py::TestScaffoldIndexIncludesTopics -v`
 Expected: FAIL
 
-**Step 3: Update scaffold_kb and add rebuild_index**
+**Step 3: Update scaffold_knowledge_base and add rebuild_index**
 
 In `dewey/skills/init/scripts/scaffold.py`, update the index.md section (around line 248):
 
@@ -663,7 +663,7 @@ if __name__ == "__main__":
             else []
         )
         topics = json.loads(args.starter_topics) if args.starter_topics else None
-        result = scaffold_kb(Path(args.target), args.role, areas, topics, knowledge_dir=args.knowledge_dir)
+        result = scaffold_knowledge_base(Path(args.target), args.role, areas, topics, knowledge_dir=args.knowledge_dir)
         print(result)
 ```
 
@@ -678,7 +678,7 @@ Expected: All PASS
 git add dewey/skills/init/scripts/scaffold.py tests/skills/init/test_scaffold.py
 git commit -m "Wire filesystem-driven index into scaffold, add rebuild_index CLI
 
-scaffold_kb now discovers topics from disk when regenerating index.md.
+scaffold_knowledge_base now discovers topics from disk when regenerating index.md.
 New rebuild_index() function and --rebuild-index CLI flag for curate
 workflows to call after adding topics."
 ```
@@ -691,12 +691,12 @@ Add a Tier 1 validator that detects when `index.md` is out of sync with the actu
 
 **Files:**
 - Modify: `dewey/skills/health/scripts/validators.py`
-- Modify: `dewey/skills/health/scripts/check_kb.py`
-- Test: `tests/skills/health/test_check_kb.py`
+- Modify: `dewey/skills/health/scripts/check_knowledge_base.py`
+- Test: `tests/skills/health/test_check_knowledge_base.py`
 
 **Step 1: Write the failing tests**
 
-Add to `tests/skills/health/test_check_kb.py`:
+Add to `tests/skills/health/test_check_knowledge_base.py`:
 
 ```python
 class TestCheckIndexSync(unittest.TestCase):
@@ -753,7 +753,7 @@ class TestCheckIndexSync(unittest.TestCase):
 
 **Step 2: Run tests to verify they fail**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestCheckIndexSync -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestCheckIndexSync -v`
 Expected: FAIL — `check_index_sync` doesn't exist.
 
 **Step 3: Implement check_index_sync in validators.py**
@@ -761,7 +761,7 @@ Expected: FAIL — `check_index_sync` doesn't exist.
 Add to `dewey/skills/health/scripts/validators.py`:
 
 ```python
-def check_index_sync(kb_root: Path, *, knowledge_dir_name: str = "docs") -> list[dict]:
+def check_index_sync(knowledge_base_root: Path, *, knowledge_dir_name: str = "docs") -> list[dict]:
     """Check that index.md lists all topic files that exist on disk.
 
     Warns when:
@@ -769,7 +769,7 @@ def check_index_sync(kb_root: Path, *, knowledge_dir_name: str = "docs") -> list
     - A topic file exists on disk but is not referenced in index.md
     """
     issues: list[dict] = []
-    knowledge_dir = kb_root / knowledge_dir_name
+    knowledge_dir = knowledge_base_root / knowledge_dir_name
     index_path = knowledge_dir / "index.md"
 
     if not index_path.exists():
@@ -805,9 +805,9 @@ def check_index_sync(kb_root: Path, *, knowledge_dir_name: str = "docs") -> list
     return issues
 ```
 
-**Step 4: Wire into check_kb.py**
+**Step 4: Wire into check_knowledge_base.py**
 
-In `dewey/skills/health/scripts/check_kb.py`, add to the imports:
+In `dewey/skills/health/scripts/check_knowledge_base.py`, add to the imports:
 
 ```python
 from validators import (
@@ -826,13 +826,13 @@ And add after the `check_coverage` call in `run_health_check()`:
 
 ```python
     # Structural validators (run once)
-    all_issues.extend(check_coverage(kb_root, knowledge_dir_name=knowledge_dir_name))
-    all_issues.extend(check_index_sync(kb_root, knowledge_dir_name=knowledge_dir_name))
+    all_issues.extend(check_coverage(knowledge_base_root, knowledge_dir_name=knowledge_dir_name))
+    all_issues.extend(check_index_sync(knowledge_base_root, knowledge_dir_name=knowledge_dir_name))
 ```
 
 **Step 5: Run tests to verify they pass**
 
-Run: `python3 -m pytest tests/skills/health/test_check_kb.py::TestCheckIndexSync -v`
+Run: `python3 -m pytest tests/skills/health/test_check_knowledge_base.py::TestCheckIndexSync -v`
 Expected: All PASS
 
 **Step 6: Run full test suite**
@@ -843,7 +843,7 @@ Expected: All pass.
 **Step 7: Commit**
 
 ```bash
-git add dewey/skills/health/scripts/validators.py dewey/skills/health/scripts/check_kb.py tests/skills/health/test_check_kb.py
+git add dewey/skills/health/scripts/validators.py dewey/skills/health/scripts/check_knowledge_base.py tests/skills/health/test_check_knowledge_base.py
 git commit -m "Add check_index_sync validator to detect stale index.md
 
 Tier 1 health checks now warn when topic files exist on disk but are
@@ -871,7 +871,7 @@ After the existing manifest update steps (Step 5), add a new step:
 Regenerate the table of contents so the new topic appears:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <kb_root> --rebuild-index
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <knowledge_base_root> --rebuild-index
 ```
 ```
 
@@ -885,7 +885,7 @@ After the existing manifest update steps (Step 6), add a new step:
 Regenerate the table of contents so the promoted topic appears:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <kb_root> --rebuild-index
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/scaffold.py --target <knowledge_base_root> --rebuild-index
 ```
 ```
 
@@ -919,7 +919,7 @@ Verify everything works together using the sandbox knowledge base.
 3. Verify no frontmatter in the new `index.md`
 4. Run health check:
    ```bash
-   python3 dewey/skills/health/scripts/check_kb.py --kb-root sandbox
+   python3 dewey/skills/health/scripts/check_knowledge_base.py --knowledge-base-root sandbox
    ```
 5. Verify 0 fails, 0 warns related to index.md
 6. Run full test suite: `python3 -m pytest tests/ -v -k "not test_scaffold_sandbox"`
