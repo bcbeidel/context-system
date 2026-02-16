@@ -134,10 +134,14 @@ dewey/
     health/                           # Quality validation
       SKILL.md
       scripts/validators.py, cross_validators.py, auto_fix.py, check_knowledge_base.py,
-              tier2_triggers.py, history.py, utilization.py, log_access.py
+              tier2_triggers.py, history.py, utilization.py, log_access.py,
+              hook_log_access.py
       workflows/health-check.md, health-audit.md, health-review.md,
                health-coverage.md, health-freshness.md
       references/validation-rules.md, quality-dimensions.md, design-principles.md
+    report-issue/                       # GitHub issue submission
+      SKILL.md
+      workflows/report-issue-submit.md
 docs/plans/                           # Design documents
 tests/                                # Test suite (536 tests)
 ```
