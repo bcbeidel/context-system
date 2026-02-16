@@ -5,20 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Test
 
 ```bash
-# Run all tests
 python3 -m pytest tests/ -v
-
-# Run a single test file
-python3 -m pytest tests/skills/health/test_check_kb.py -v
-
-# Run a single test class or method
-python3 -m pytest tests/skills/health/test_tier2_triggers.py::TestTriggerSourceDrift -v
-
-# Skip sandbox scaffold test (slow, creates real files)
-python3 -m pytest tests/ -v -k "not test_scaffold_sandbox"
-
-# Symlink for local plugin development
-ln -s "$(pwd)/dewey" ~/.claude/plugins/dewey
+python3 -m pytest tests/ -v -k "not test_scaffold_sandbox"  # skip slow scaffold test
 ```
 
 No build step. No dependencies beyond Python 3.9+ stdlib.
@@ -46,10 +34,8 @@ dewey/
 
 | Skill | Purpose |
 |-------|---------|
-| `init` | Bootstrap a new knowledge base with directory structure, AGENTS.md, templates |
-| `curate` | Add topics, propose additions, promote proposals, ingest from URLs |
+| `curate` | Single entry point for all KB content operations: discover domains, scaffold structure, add/update topics, ingest URLs, manage proposals and curation plan |
 | `health` | Validate quality, check freshness, analyze coverage gaps, generate reports |
-| `explore` | Discover knowledge domains through guided conversation |
 
 ### Three-Tier Health Model
 
@@ -57,68 +43,17 @@ dewey/
 2. **Tier 2 -- LLM-Assisted (Claude)** -- Pre-screener in `tier2_triggers.py` flags files with context data. Claude evaluates flagged items: source drift, depth accuracy, why-quality, in-practice concreteness, source primacy.
 3. **Tier 3 -- Human Judgment** -- Surfaces decisions requiring human input: relevance questions, scope decisions, pending proposals, conflict resolution.
 
-### Knowledge Base Structure
+### Design Principles
 
-```
-project-root/
-  AGENTS.md                        # Role persona + topic manifest
-  docs/                            # Knowledge directory (configurable via .dewey/config.json)
-    <domain-area>/
-      overview.md                  # Area orientation (depth: overview)
-      <topic>.md                   # Working knowledge (depth: working)
-      <topic>.ref.md               # Expert reference (depth: reference)
-    _proposals/                    # Staged additions pending review
-  .dewey/
-    config.json                    # Settings (knowledge_dir name)
-    health/                        # Quality scores, tier2-report.json
-    history/                       # Change log
-    utilization/                   # Reference tracking
-```
-
-Every knowledge file carries YAML frontmatter: `sources`, `last_validated`, `relevance`, `depth`.
-
-## Design Principles
-
-Twelve principles grounded in agent context research (Anthropic, OpenAI) and cognitive science (Sweller, Vygotsky, Paivio, Bjork, Pirolli, Kalyuga, Dunlosky).
-
-### From Agent Context Research
-
-1. **Source Primacy** -- The knowledge base is a curated guide, not a replacement for primary sources. Every entry points to one. When an agent or human needs to go deeper, the path is always clear.
-2. **Dual Audience** -- Every entry serves the agent (structured, token-efficient context) and the human (readable, navigable content). When these conflict, favor human readability -- agents are more adaptable readers.
-3. **Three-Dimensional Quality** -- Content quality measured across relevance, accuracy/freshness, and structural fitness simultaneously.
-4. **Collaborative Curation** -- Either the human or an agent can propose additions, but all content passes through validation. The human brings domain judgment. The agent brings systematic coverage. Neither is sufficient alone.
-5. **Provenance & Traceability** -- Every piece of knowledge carries metadata about where it came from, when it was last validated, and why it's in the knowledge base.
-6. **Domain-Shaped Organization** -- Organized around the domain's natural structure, not file types or technical categories. The taxonomy should feel intuitive to a practitioner.
-7. **Right-Sized Scope** -- Contains what's needed to be effective in the role, and no more. The curation act is as much about what you exclude as what you include.
-8. **Empirical Feedback** -- Observable signals about knowledge base health: coverage gaps, stale entries, unused content. Proxy metrics inform curation decisions.
-9. **Progressive Disclosure** -- Layered access so agents can discover what's available without loading everything. Metadata -> summaries -> full content -> deep references.
-
-### From Cognitive Science Research
-
-10. **Explain the Why** -- Causal explanations produce better comprehension and retention than stating facts alone. Every entry explains not just what to do, but why.
-11. **Concrete Before Abstract** -- Lead with examples and worked scenarios, then build toward the abstraction. Concrete concepts create stronger memory traces.
-12. **Multiple Representations** -- Important concepts should exist at multiple levels of depth (overview, working knowledge, reference). Material that helps novices can hinder experts and vice versa -- label each level clearly so readers self-select.
+Twelve principles grounded in agent context research and cognitive science guide knowledge base content. See @dewey/skills/health/references/design-principles.md for the full list.
 
 ## Conventions
 
-### Python
-
-- **Python 3.9+ stdlib only** -- zero external dependencies
-- Use `from __future__ import annotations` for union syntax (`str | None`) in type annotations
-- Use `Optional[str]` in runtime expressions and function parameter defaults (Python 3.9 compat)
-- Scripts live in `skills/<skill>/scripts/` and import each other directly (no package `__init__.py`)
-- Cross-skill imports: add sibling scripts dirs to `sys.path` (see `check_kb.py` for pattern)
-
-### Tests
-
-- Framework: `unittest.TestCase`
-- Pattern: `_write()` helper, `tempfile.mkdtemp()` in `setUp`, `shutil.rmtree()` in `tearDown`
-- Imports: direct module imports (e.g., `from validators import check_frontmatter`) -- `conftest.py` adds all scripts dirs to `sys.path`
-- Location: `tests/skills/<skill>/` mirrors `dewey/skills/<skill>/scripts/`
+For the canonical script pattern, see `validators.py`. For the canonical test pattern, see `tests/skills/health/test_validators.py`. Python and test conventions are in `.claude/rules/`.
 
 ### Issue Format
 
-All validators and triggers return structured dicts:
+All validators and triggers return `list[dict]` (always a list, even if empty):
 
 ```python
 # Tier 1 validators
@@ -136,16 +71,16 @@ All validators and triggers return structured dicts:
 | `working` | Actionable guidance with examples | 10-400 |
 | `reference` | Terse, scannable lookup | 3-150 |
 
-## Current Status
+## Gotchas
 
-| Feature | Status |
-|---------|--------|
-| Knowledge base scaffolding (`/dewey:init`) | Complete |
-| Content lifecycle (`/dewey:curate add/propose/promote/ingest`) | Complete |
-| Domain discovery (`/dewey:explore`) | Complete |
-| Tier 1 deterministic health checks (7 validators) | Complete |
-| Tier 2 pre-screener (5 triggers) | Complete |
-| Tier 2 LLM-assisted audit workflow | Complete |
-| Tier 3 human decision queue | Designed, not yet tested |
-| Utilization tracking | Complete |
-| History / baselines | Complete |
+- IMPORTANT: Python 3.9 runtime -- `str | None` works in annotations (with `from __future__ import annotations`) but NOT in `isinstance()`, default values, or other runtime expressions. Use `Optional[str]` there.
+- Scripts must be runnable standalone (`if __name__ == "__main__"` with argparse) -- do not create scripts that only work as imports.
+- Cross-skill imports require the `sys.path.insert(0, ...)` pattern with idempotency check -- do not use relative imports or package `__init__.py`.
+- Test temp dirs must use `self.tmpdir` from setUp/tearDown -- never write to the actual project directory.
+- Validators and triggers always return `list[dict]`, never a single dict, raw string, or None.
+- Hook scripts must never fail -- wrap in `except Exception` and always exit 0.
+
+## Known Limitations
+
+- Tier 3 human decision queue: designed in `health-review.md` but not yet tested
+- Utilization auto-capture: hook exists but provider-agnostic fallback not yet implemented
