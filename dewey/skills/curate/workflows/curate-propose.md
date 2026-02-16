@@ -42,6 +42,8 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate/scripts/propose.py --kb-root <kb_roo
 Show the user the proposal file that was created:
 - `<knowledge-dir>/_proposals/<slug>.md`
 
+The proposal includes a Source Evaluation section placeholder. Full source evaluation will be performed when the proposal is promoted into a domain area.
+
 ## Step 5: Explain the proposal lifecycle
 
 "The proposal has been created in `<knowledge-dir>/_proposals/`. Next steps:

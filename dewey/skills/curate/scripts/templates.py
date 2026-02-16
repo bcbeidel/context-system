@@ -441,6 +441,9 @@ def render_proposal_md(
         "",
         "## Go Deeper",
         "<!-- Links to primary sources, books, talks, and further reading -->",
+        "",
+        "## Source Evaluation",
+        "<!-- Complete during research step: source scoring table and provenance block -->",
     ]
 
     return fm + "\n\n" + "\n".join(body_lines) + "\n"
