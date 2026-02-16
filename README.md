@@ -1,6 +1,6 @@
 # Dewey -- Knowledge Base Management for Claude Code
 
-Dewey is a Claude Code plugin that helps you build, curate, and maintain structured knowledge bases. It implements a [specification](docs/plans/2026-02-14-knowledge-base-spec-design.md) for role-specific knowledge bases that serve both AI agents and humans.
+Dewey is a Claude Code plugin that helps you build, curate, and maintain structured knowledge bases. It implements a specification for role-specific knowledge bases that serve both AI agents and humans.
 
 ## Why
 
@@ -98,7 +98,7 @@ Twelve principles grounded in agent context research (Anthropic, OpenAI) and cog
 11. **Concrete Before Abstract** -- Lead with examples and worked scenarios, then build toward the abstraction. Concrete concepts create stronger memory traces.
 12. **Multiple Representations** -- Important concepts should exist at multiple levels of depth (overview, working knowledge, reference). Material that helps novices can hinder experts and vice versa -- label each level clearly so readers self-select.
 
-See the full [specification](docs/plans/2026-02-14-knowledge-base-spec-design.md) for detailed rationale and research sources.
+See the [design principles reference](dewey/skills/health/references/design-principles.md) for detailed rationale and research sources.
 
 ## Tech Stack
 
@@ -142,7 +142,6 @@ dewey/
     report-issue/                       # GitHub issue submission
       SKILL.md
       workflows/report-issue-submit.md
-docs/plans/                           # Design documents
 tests/                                # Test suite (536 tests)
 ```
 
@@ -166,6 +165,6 @@ tests/                                # Test suite (536 tests)
 
 ## Documentation
 
-- [Knowledge Base Specification](docs/plans/2026-02-14-knowledge-base-spec-design.md) -- The full design spec
-- [Implementation Plan](docs/plans/2026-02-14-knowledge-base-skills-implementation.md) -- How the skills were built (completed)
-- [Curate Redesign](docs/plans/2026-02-15-curate-redesign.md) -- Consolidation of explore/init/curate into a single skill
+- [Design Principles](dewey/skills/health/references/design-principles.md) -- The twelve principles guiding knowledge base content
+- [Knowledge Base Spec Summary](dewey/skills/curate/references/knowledge-base-spec-summary.md) -- Structural specification reference
+- [CHANGELOG](CHANGELOG.md) -- Release history

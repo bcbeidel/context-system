@@ -1,6 +1,6 @@
 # Knowledge Base Specification Summary
 
-Reference for the full spec: `docs/plans/2026-02-14-knowledge-base-spec-design.md`
+Reference: see `dewey/skills/health/references/design-principles.md` for the full design principles.
 
 ## Core Principles
 
