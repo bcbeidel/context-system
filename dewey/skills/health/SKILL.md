@@ -10,7 +10,7 @@ Validates knowledge base quality across three tiers and three quality dimensions
 
 ## Three-Tier Validation
 
-1. **Tier 1 -- Deterministic (Python)** -- Fast, automated checks run by `check_kb.py`. 18 per-file validators (frontmatter, sections, size bounds, readability, sources, freshness, and more) plus 6 cross-file validators (manifest sync, curation plan sync, proposal integrity, link graph, duplicate detection, naming conventions). Auto-fix available for common issues. No LLM required. CI-friendly.
+1. **Tier 1 -- Deterministic (Python)** -- Fast, automated checks run by `check_knowledge_base.py`. 18 per-file validators (frontmatter, sections, size bounds, readability, sources, freshness, and more) plus 6 cross-file validators (manifest sync, curation plan sync, proposal integrity, link graph, duplicate detection, naming conventions). Auto-fix available for common issues. No LLM required. CI-friendly.
 2. **Tier 2 -- LLM-Assisted (Claude)** -- Claude evaluates items flagged by Tier 1 or entries with stale `last_validated` dates. Assesses source drift, depth label accuracy, "Why This Matters" quality, and "In Practice" concreteness.
 3. **Tier 3 -- Human Judgment** -- Surfaces decisions that require human input: relevance questions, scope decisions, pending proposals, and conflict resolution between knowledge base claims and updated sources.
 
@@ -103,7 +103,7 @@ All references in `references/`:
 
 Located in `scripts/`:
 
-**check_kb.py** -- Health check runner
+**check_knowledge_base.py** -- Health check runner
 - Discovers all .md files under the knowledge base directory (excluding _proposals/ and index.md)
 - Runs all Tier 1 deterministic validators on each file
 - Returns structured JSON report with issues and summary
@@ -111,7 +111,7 @@ Located in `scripts/`:
 
 **Usage:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_kb.py --knowledge-base-root <knowledge_base_root>
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_knowledge_base.py --knowledge-base-root <knowledge_base_root>
 ```
 
 **validators.py** -- Tier 1 deterministic validators
@@ -144,12 +144,12 @@ Every validator returns a list of issue dicts: `{"file": str, "message": str, "s
 
 **Tier 2 pre-screening only:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_kb.py --knowledge-base-root <knowledge_base_root> --tier2
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_knowledge_base.py --knowledge-base-root <knowledge_base_root> --tier2
 ```
 
 **Combined Tier 1 + Tier 2:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_kb.py --knowledge-base-root <knowledge_base_root> --both
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_knowledge_base.py --knowledge-base-root <knowledge_base_root> --both
 ```
 
 Returns `{"tier1": {...}, "tier2": {...}}` with both Tier 1 issues/summary and Tier 2 queue/summary.
@@ -174,7 +174,7 @@ Every trigger returns: `{"file": str, "trigger": str, "reason": str, "context": 
 **history.py** -- Health score history tracking
 - `record_snapshot(knowledge_base_root, tier1_summary, tier2_summary)` -- Appends timestamped snapshot to `.dewey/history/health-log.jsonl`
 - `read_history(knowledge_base_root, limit=10)` -- Returns the last N snapshots in chronological order
-- Auto-called by `check_kb.py` after each run
+- Auto-called by `check_knowledge_base.py` after each run
 
 **utilization.py** -- Topic reference tracking
 - `record_reference(knowledge_base_root, file_path, context="user")` -- Appends to `.dewey/utilization/log.jsonl`

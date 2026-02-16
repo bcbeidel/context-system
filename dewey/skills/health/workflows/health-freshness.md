@@ -7,10 +7,10 @@ Generate a staleness report for all knowledge base entries, grouped by urgency.
 
 Use a two-step approach:
 
-### Step 1a: Run check_kb.py for initial scan
+### Step 1a: Run check_knowledge_base.py for initial scan
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_kb.py --knowledge-base-root <knowledge_base_root>
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/health/scripts/check_knowledge_base.py --knowledge-base-root <knowledge_base_root>
 ```
 
 This runs `check_freshness` as part of Tier 1 validation and will flag files that are overdue (>90 days) or missing `last_validated`. Use the JSON output to identify which files have freshness issues.
@@ -24,7 +24,7 @@ For the full freshness report, read each .md file under `docs/` (excluding `_pro
 - `depth` from frontmatter
 - Domain area (parent directory name)
 
-This direct read is needed because check_kb.py only flags failures/warnings -- the freshness report also needs data from **passing** files to show the full picture.
+This direct read is needed because check_knowledge_base.py only flags failures/warnings -- the freshness report also needs data from **passing** files to show the full picture.
 
 If a file has no `last_validated` field, flag it as "never validated."
 

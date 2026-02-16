@@ -9,7 +9,7 @@ from templates import MARKER_BEGIN, MARKER_END
 from create_topic import create_topic
 from propose import create_proposal
 from promote import promote_proposal
-from check_kb import run_health_check
+from check_knowledge_base import run_health_check
 
 
 class TestKnowledgeBaseLifecycle(unittest.TestCase):

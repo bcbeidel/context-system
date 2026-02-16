@@ -1,4 +1,4 @@
-"""Tests for skills.health.scripts.check_kb — health check runner."""
+"""Tests for skills.health.scripts.check_knowledge_base — health check runner."""
 
 import json
 import shutil
@@ -7,7 +7,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from check_kb import run_health_check, run_tier2_prescreening, run_combined_report
+from check_knowledge_base import run_health_check, run_tier2_prescreening, run_combined_report
 
 
 def _write(path: Path, text: str) -> Path:
@@ -495,7 +495,7 @@ class TestIndexMdExclusion(unittest.TestCase):
         self.assertEqual(fail_messages, [], f"index.md should not trigger failures: {fail_messages}")
 
     def test_discover_md_files_excludes_index(self):
-        from check_kb import _discover_md_files
+        from check_knowledge_base import _discover_md_files
         files = _discover_md_files(self.tmpdir, "docs")
         filenames = [f.name for f in files]
         self.assertNotIn("index.md", filenames)

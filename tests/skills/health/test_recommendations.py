@@ -8,7 +8,7 @@ import unittest
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from check_kb import generate_recommendations
+from check_knowledge_base import generate_recommendations
 
 
 def _write(path: Path, text: str) -> Path:
@@ -387,7 +387,7 @@ class TestCLI(unittest.TestCase):
 
     def _run(self, *extra_args) -> subprocess.CompletedProcess:
         script = Path(__file__).resolve().parent.parent.parent.parent / \
-            "dewey" / "skills" / "health" / "scripts" / "check_kb.py"
+            "dewey" / "skills" / "health" / "scripts" / "check_knowledge_base.py"
         cmd = ["python3", str(script), "--knowledge-base-root", str(self.tmpdir)]
         cmd.extend(extra_args)
         return subprocess.run(cmd, capture_output=True, text=True, timeout=10)
