@@ -155,9 +155,9 @@ tests/                                # Test suite (483 tests)
 | Readability and duplicate content detection | Complete |
 | Auto-fix for common issues | Complete |
 | Health history and baselines | Complete |
-| Utilization tracking | Infrastructure complete, auto-capture pending |
-| Tier 3 human decision queue | Designed, not yet tested |
-| Cross-provider support (Codex, Gemini CLI, Cursor) | Planned |
+| Utilization tracking | Infrastructure complete, auto-capture pending ([#3](https://github.com/bcbeidel/dewey/issues/3)) |
+| Tier 3 human decision queue | Designed, not yet tested ([#2](https://github.com/bcbeidel/dewey/issues/2)) |
+| Cross-provider support via MCP | Planned ([#1](https://github.com/bcbeidel/dewey/issues/1)) |
 
 ## Documentation
 

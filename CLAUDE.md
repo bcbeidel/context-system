@@ -86,5 +86,6 @@ All validators and triggers return `list[dict]` (always a list, even if empty):
 
 ## Known Limitations
 
-- Tier 3 human decision queue: designed in `health-review.md` but not yet tested
-- Cross-provider support: KB output format is provider-agnostic by design, but Dewey currently only runs as a Claude Code plugin
+- Tier 3 human decision queue: designed in `health-review.md` but not yet tested ([#2](https://github.com/bcbeidel/dewey/issues/2))
+- Utilization auto-capture: hook exists but auto-capture not yet wired up ([#3](https://github.com/bcbeidel/dewey/issues/3))
+- Cross-provider support: KB output format is provider-agnostic by design, but Dewey currently only runs as a Claude Code plugin ([#1](https://github.com/bcbeidel/dewey/issues/1))
