@@ -3,17 +3,13 @@ Ingest an external URL into the knowledge base by fetching the content, evaluati
 </objective>
 
 <process>
-## Step 1: Parse arguments and resolve defaults
+## Step 1: Resolve URL and context from intake
 
-Parse `$ARGUMENTS` for the URL, topic name, and relevance. Examples of valid invocations:
+The intake classifier identified a URL in the user's input. Extract:
 
-- `/dewey:curate ingest https://docs.example.com/guide` -- URL only
-- `/dewey:curate ingest https://docs.example.com/guide "Dependency Injection"` -- URL + topic name
-- `/dewey:curate ingest https://docs.example.com/guide "Dependency Injection" --relevance supporting` -- URL + topic name + relevance
-
-**Defaults:**
-- **Topic name** -- If not provided, infer from the page title or URL path after fetching
-- **Relevance** defaults to `core` unless specified
+- **URL** — the URL from the user's message
+- **Topic name** — if the user mentioned a topic name, use it. Otherwise, infer from the page title after fetching.
+- **Relevance** — default to `core` unless the user specified otherwise
 
 Do NOT ask the user for information that can be inferred. Get moving quickly.
 
